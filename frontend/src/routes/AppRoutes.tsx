@@ -2,6 +2,10 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
+import { DashboardPage } from "@/features/dashboard/DashboardPage";
+import { ProductsPage } from "@/features/products/ProductsPage";
+import { SalesOrderDetailPage } from "@/features/sales/SalesOrderDetailPage";
+import { SalesOrdersPage } from "@/features/sales/SalesOrdersPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { PlaceholderPage } from "@/pages/PlaceholderPage";
 
@@ -18,27 +22,10 @@ export function AppRoutes() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route
-            path="/dashboard"
-            element={
-              <PlaceholderPage title="Dashboard" subtitle="Today's operational snapshot." />
-            }
-          />
-          <Route
-            path="/products"
-            element={
-              <PlaceholderPage
-                title="Products"
-                subtitle="Manage inventory, monitor stock levels, and configure procurement strategies."
-              />
-            }
-          />
-          <Route
-            path="/sales"
-            element={
-              <PlaceholderPage title="Sales Orders" subtitle="Quote-to-cash order management." />
-            }
-          />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/products" element={<ProductsPage />} />
+          <Route path="/sales" element={<SalesOrdersPage />} />
+          <Route path="/sales/:id" element={<SalesOrderDetailPage />} />
           <Route
             path="/purchase"
             element={
