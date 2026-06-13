@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mini ERP - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#131b2e",
+                    "secondary-fixed": "#dae2fd",
+                    "surface-variant": "#d3e4fe",
+                    "surface-dim": "#cbdbf5",
+                    "secondary-container": "#dae2fd",
+                    "on-background": "#0b1c30",
+                    "background": "#f8f9ff",
+                    "on-error-container": "#93000a",
+                    "outline": "#777587",
+                    "surface-container-highest": "#d3e4fe",
+                    "surface-container-low": "#eff4ff",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "on-error": "#ffffff",
+                    "error": "#ba1a1a",
+                    "outline-variant": "#c7c4d8",
+                    "on-surface-variant": "#464555",
+                    "primary": "#3525cd",
+                    "on-tertiary": "#ffffff",
+                    "inverse-primary": "#c3c0ff",
+                    "on-secondary-fixed-variant": "#3f465c",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#6ffbbe",
+                    "primary-container": "#4f46e5",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#eaf1ff",
+                    "on-tertiary-container": "#67f4b7",
+                    "surface-container-high": "#dce9ff",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "tertiary": "#005338",
+                    "surface-tint": "#4d44e3",
+                    "surface": "#f8f9ff",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed": "#0f0069",
+                    "on-tertiary-fixed": "#002113",
+                    "on-primary-container": "#dad7ff",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "primary-fixed": "#e2dfff",
+                    "secondary": "#565e74",
+                    "on-surface": "#0b1c30",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed-dim": "#bec6e0",
+                    "on-secondary-container": "#5c647a",
+                    "tertiary-container": "#006e4b",
+                    "surface-container": "#e5eeff",
+                    "surface-bright": "#f8f9ff",
+                    "inverse-surface": "#213145"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sidebar-width": "260px",
+                    "gutter": "16px",
+                    "header-height": "64px",
+                    "base": "4px",
+                    "container-margin": "24px",
+                    "sidebar-collapsed": "72px"
+            },
+            "fontFamily": {
+                    "body-sm": [
+                            "Inter"
+                    ],
+                    "table-data": [
+                            "Inter"
+                    ],
+                    "display-lg": [
+                            "Inter"
+                    ],
+                    "title-sm": [
+                            "Inter"
+                    ],
+                    "headline-md": [
+                            "Inter"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "label-upper": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {
+                    "body-sm": [
+                            "13px",
+                            {
+                                    "lineHeight": "18px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "table-data": [
+                            "13px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "title-sm": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-upper": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen flex text-on-surface font-body-md overflow-hidden">
+<!-- Split Screen Layout -->
+<div class="flex w-full h-screen">
+<!-- Left Brand Side (Hidden on Mobile) -->
+<div class="hidden lg:flex w-1/2 flex-col justify-between bg-surface-container-high relative overflow-hidden p-12">
+<!-- Atmospheric Pattern / Graphic -->
+<div class="absolute inset-0 z-0 opacity-40 pointer-events-none mix-blend-multiply" style="background-image: radial-gradient(circle at 20% 30%, rgba(79, 70, 229, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(103, 244, 183, 0.1) 0%, transparent 40%);">
+</div>
+<!-- Header / Logo -->
+<div class="z-10 flex items-center space-x-4">
+<div class="w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center p-2 border border-outline-variant">
+<img alt="Mini ERP Logo" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJFwhNBs_fXAq5VDKzAH0mOkS5xodSGz9p-G2JDRBU5kH_2-pXpA5a34cjG3L34W1tIug0fA_f-Qgg93mKDXdVGici9QftU1_3nFXd4MtxAuhapqn95vkXI7suI9cy_7Ie2lupAjXQDZPiql75qOiVrXug2JNGcYTFo4EtDLLpe_Ihj0oBKs5AiDvp0fsDkIM4j2XcniELRt3schQjTdKZQcOT51B2kBcYCISmzpGOoWlNUSMZhmsYX6dzMZ2koTc871msxDQ500rT"/>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold tracking-tight text-on-surface">Mini ERP</h1>
+</div>
+</div>
+<!-- Hero Illustration/Graphic Area -->
+<div class="z-10 flex-grow flex items-center justify-center py-12">
+<div class="relative w-full max-w-lg aspect-square rounded-2xl overflow-hidden shadow-[0_20px_25px_-5px_rgba(15,23,42,0.1)] border border-outline-variant" data-alt="A sophisticated, high-tech abstract 3D visualization representing enterprise data integration. Glowing data nodes connected by sleek, minimal lines float in a bright, modern light-mode environment. The scene uses a precise color palette of crisp whites, soft slates, and deep indigo accents, conveying a sense of organized complexity and calm reliability. Soft, diffused ambient lighting creates a premium, SaaS aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCLy3jHhCddjmp42tIy3dHkPV2MgmWEQbJCqHt4SXDcI7BHBdqcPObB0uBAVgtTVd1FzvT0gjSGFO6l9KiE4Yb8I2y0gobIR2RoPbkHh9TgmLT0yXLq7rmFSZNcafeFNj-BDhs7BgdFwxq8DpEN140b-iX6HvAI_9q0yXxnOc8FxE-qYH93AS0nWBdEPqZ1R6K-1ip8bey_S_n6_oMLSHT7E9Mr2ctlQRpl90joYQ6YqeBypyWDOg8joJIG3e4ZE-sLpAihiRtsg0Kv'); background-size: cover; background-position: center;">
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-high/90 via-surface-container-high/20 to-transparent"></div>
+<!-- Floating UI Elements for 'Kinetic Enterprise' feel -->
+<div class="absolute bottom-8 left-8 right-8 glass-panel rounded-xl p-6 shadow-lg">
+<div class="flex items-center space-x-4 mb-4">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">sync</span>
+</div>
+<div>
+<p class="font-title-sm text-title-sm text-on-surface">Real-time Sync</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Active modules updated</p>
+</div>
+</div>
+<div class="w-full bg-surface-container-low h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-3/4 rounded-full relative">
+<div class="absolute inset-0 bg-white/30 animate-[pulse_2s_ease-in-out_infinite]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer / Tagline -->
+<div class="z-10 max-w-md">
+<h2 class="font-display-lg text-display-lg text-on-surface mb-4">Inventory-driven ERP.</h2>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                    Streamline your supply chain, manage manufacturing orders, and gain total control over your enterprise resources with precision and clarity.
+                </p>
+</div>
+</div>
+<!-- Right Login Form Side -->
+<div class="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-surface">
+<div class="w-full max-w-md">
+<!-- Mobile Logo (Hidden on Desktop) -->
+<div class="flex lg:hidden items-center justify-center space-x-3 mb-12">
+<div class="w-10 h-10 bg-white rounded-lg shadow-sm flex items-center justify-center p-1 border border-outline-variant">
+<img alt="Mini ERP Logo" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJFwhNBs_fXAq5VDKzAH0mOkS5xodSGz9p-G2JDRBU5kH_2-pXpA5a34cjG3L34W1tIug0fA_f-Qgg93mKDXdVGici9QftU1_3nFXd4MtxAuhapqn95vkXI7suI9cy_7Ie2lupAjXQDZPiql75qOiVrXug2JNGcYTFo4EtDLLpe_Ihj0oBKs5AiDvp0fsDkIM4j2XcniELRt3schQjTdKZQcOT51B2kBcYCISmzpGOoWlNUSMZhmsYX6dzMZ2koTc871msxDQ500rT"/>
+</div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">Mini ERP</h1>
+</div>
+<div class="text-center lg:text-left mb-10">
+<h2 class="font-display-lg text-display-lg text-on-surface mb-2">Welcome back</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Please enter your details to access your dashboard.</p>
+</div>
+<form action="#" class="space-y-6" method="POST">
+<!-- Email Input -->
+<div>
+<label class="block font-label-upper text-label-upper text-on-surface-variant mb-2 uppercase" for="email">Email Address</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline-variant">mail</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-3 border border-outline-variant rounded-lg bg-surface text-on-surface font-body-md placeholder-outline focus:ring-2 focus:ring-primary focus:border-primary transition-colors" id="email" name="email" placeholder="name@company.com" required="" type="email"/>
+</div>
+</div>
+<!-- Password Input -->
+<div>
+<label class="block font-label-upper text-label-upper text-on-surface-variant mb-2 uppercase" for="password">Password</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline-variant">lock</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-3 border border-outline-variant rounded-lg bg-surface text-on-surface font-body-md placeholder-outline focus:ring-2 focus:ring-primary focus:border-primary transition-colors" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+</div>
+</div>
+<!-- Options Row -->
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<input class="h-4 w-4 text-primary focus:ring-primary border-outline-variant rounded bg-surface" id="remember-me" name="remember-me" type="checkbox"/>
+<label class="ml-2 block font-body-sm text-body-sm text-on-surface-variant cursor-pointer" for="remember-me">
+                                Remember me
+                            </label>
+</div>
+<div class="text-sm">
+<a class="font-body-sm text-body-sm text-primary hover:text-primary-container font-semibold transition-colors" href="#">
+                                Forgot password?
+                            </a>
+</div>
+</div>
+<!-- Submit Button -->
+<div>
+<button class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-title-sm text-title-sm text-on-primary bg-primary hover:bg-primary-container focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors group" type="submit">
+<span>Login to Dashboard</span>
+<span class="material-symbols-outlined ml-2 text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</form>
+<!-- Footer Links -->
+<div class="mt-8 pt-6 border-t border-outline-variant/30 text-center">
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                        Don't have an account? 
+                        <a class="font-title-sm text-title-sm text-primary hover:text-primary-container font-semibold ml-1" href="#">Contact Support</a>
+</p>
+</div>
+</div>
+</div>
+</div>
+</body></html>

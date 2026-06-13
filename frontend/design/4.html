@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sales Order SO-1024 - Mini ERP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#131b2e",
+                    "secondary-fixed": "#dae2fd",
+                    "surface-variant": "#d3e4fe",
+                    "surface-dim": "#cbdbf5",
+                    "secondary-container": "#dae2fd",
+                    "on-background": "#0b1c30",
+                    "background": "#f8f9ff",
+                    "on-error-container": "#93000a",
+                    "outline": "#777587",
+                    "surface-container-highest": "#d3e4fe",
+                    "surface-container-low": "#eff4ff",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "on-error": "#ffffff",
+                    "error": "#ba1a1a",
+                    "outline-variant": "#c7c4d8",
+                    "on-surface-variant": "#464555",
+                    "primary": "#3525cd",
+                    "on-tertiary": "#ffffff",
+                    "inverse-primary": "#c3c0ff",
+                    "on-secondary-fixed-variant": "#3f465c",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#6ffbbe",
+                    "primary-container": "#4f46e5",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#eaf1ff",
+                    "on-tertiary-container": "#67f4b7",
+                    "surface-container-high": "#dce9ff",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "tertiary": "#005338",
+                    "surface-tint": "#4d44e3",
+                    "surface": "#f8f9ff",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed": "#0f0069",
+                    "on-tertiary-fixed": "#002113",
+                    "on-primary-container": "#dad7ff",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "primary-fixed": "#e2dfff",
+                    "secondary": "#565e74",
+                    "on-surface": "#0b1c30",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed-dim": "#bec6e0",
+                    "on-secondary-container": "#5c647a",
+                    "tertiary-container": "#006e4b",
+                    "surface-container": "#e5eeff",
+                    "surface-bright": "#f8f9ff",
+                    "inverse-surface": "#213145"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sidebar-width": "260px",
+                    "gutter": "16px",
+                    "header-height": "64px",
+                    "base": "4px",
+                    "container-margin": "24px",
+                    "sidebar-collapsed": "72px"
+            },
+            "fontFamily": {
+                    "body-sm": [
+                            "Inter"
+                    ],
+                    "table-data": [
+                            "Inter"
+                    ],
+                    "display-lg": [
+                            "Inter"
+                    ],
+                    "title-sm": [
+                            "Inter"
+                    ],
+                    "headline-md": [
+                            "Inter"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "label-upper": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {
+                    "body-sm": [
+                            "13px",
+                            {
+                                    "lineHeight": "18px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "table-data": [
+                            "13px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "title-sm": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-upper": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        body { background-color: #F8FAFC; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased flex h-screen overflow-hidden">
+<!-- SideNavBar (JSON Derived) -->
+<aside class="hidden md:flex flex-col h-full overflow-y-auto w-sidebar-width shrink-0 bg-surface-container-low dark:bg-surface-container-highest border-r border-outline-variant dark:border-outline duration-200 ease-in-out">
+<!-- Header -->
+<div class="flex items-center px-gutter py-6 border-b border-outline-variant dark:border-outline shrink-0">
+<div class="h-10 w-10 bg-primary rounded-lg flex items-center justify-center mr-3 shrink-0">
+<span class="material-symbols-outlined text-on-primary" data-icon="rocket_launch" style="font-variation-settings: 'FILL' 1;">rocket_launch</span>
+</div>
+<div>
+<h1 class="font-title-sm text-title-sm font-black text-on-background">Mini ERP</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Enterprise Edition</p>
+</div>
+</div>
+<!-- Main Navigation -->
+<nav class="flex-1 py-4 flex flex-col gap-1 px-3">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high transition-all font-body-sm text-body-sm group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high transition-all font-body-sm text-body-sm group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" data-icon="inventory_2">inventory_2</span>
+                Products
+            </a>
+<!-- ACTIVE TAB: Sales Orders -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-DEFAULT bg-secondary-container text-on-secondary-container border-l-4 border-primary font-body-sm text-body-sm font-semibold transition-all" href="#">
+<span class="material-symbols-outlined text-primary" data-icon="receipt_long" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+                Sales Orders
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high transition-all font-body-sm text-body-sm group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" data-icon="shopping_cart">shopping_cart</span>
+                Purchase Orders
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high transition-all font-body-sm text-body-sm group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" data-icon="account_tree">account_tree</span>
+                Bills of Materials
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high transition-all font-body-sm text-body-sm group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" data-icon="factory">factory</span>
+                Manufacturing Orders
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high transition-all font-body-sm text-body-sm group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" data-icon="warehouse">warehouse</span>
+                Inventory
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high transition-all font-body-sm text-body-sm group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" data-icon="history">history</span>
+                Audit Logs
+            </a>
+</nav>
+<!-- CTA -->
+<div class="p-4 mt-auto">
+<button class="w-full flex items-center justify-center gap-2 bg-primary text-on-primary py-2.5 rounded-DEFAULT font-title-sm text-title-sm font-semibold hover:bg-surface-tint transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[20px]" data-icon="add">add</span>
+                New Record
+            </button>
+</div>
+<!-- Footer Navigation -->
+<div class="px-3 py-4 border-t border-outline-variant dark:border-outline shrink-0 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high transition-all font-body-sm text-body-sm group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary" data-icon="settings">settings</span>
+                Settings
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-high transition-all font-body-sm text-body-sm group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary" data-icon="help">help</span>
+                Support
+            </a>
+</div>
+</aside>
+<!-- Main Canvas Content Area -->
+<div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">
+<!-- TopAppBar (JSON Derived - Only visible on Mobile or used as Header util on Web) -->
+<header class="flex md:hidden justify-between items-center px-gutter w-full sticky top-0 z-40 bg-surface h-header-height border-b border-outline-variant shrink-0">
+<!-- Mobile Menu Toggle (Implied) -->
+<button class="p-2 text-on-surface-variant rounded-DEFAULT hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-on-background">Mini ERP</h1>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant rounded-DEFAULT hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</div>
+</header>
+<!-- Page Content Scroll Area -->
+<main class="flex-1 overflow-y-auto p-gutter lg:p-container-margin">
+<!-- Max Width Container for Desktop -->
+<div class="max-w-[1200px] mx-auto w-full flex flex-col gap-6">
+<!-- Breadcrumbs & Actions Row -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<nav class="flex items-center gap-2 font-body-sm text-body-sm text-on-surface-variant">
+<a class="hover:text-primary transition-colors" href="#">Sales</a>
+<span class="material-symbols-outlined text-[16px]" data-icon="chevron_right">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Orders</a>
+<span class="material-symbols-outlined text-[16px]" data-icon="chevron_right">chevron_right</span>
+<span class="text-on-surface font-semibold">SO-1024</span>
+</nav>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 bg-surface text-on-surface border border-outline-variant rounded-DEFAULT font-body-sm text-body-sm font-semibold hover:bg-surface-container transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="print">print</span>
+                            Print
+                        </button>
+<button class="px-4 py-2 bg-surface text-on-surface border border-outline-variant rounded-DEFAULT font-body-sm text-body-sm font-semibold hover:bg-surface-container transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="mail">mail</span>
+                            Email
+                        </button>
+<button class="px-4 py-2 bg-primary text-on-primary rounded-DEFAULT font-body-sm text-body-sm font-semibold hover:bg-surface-tint transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="edit">edit</span>
+                            Edit Order
+                        </button>
+</div>
+</div>
+<!-- Main Order Header Document -->
+<div class="bg-surface rounded-xl border border-outline-variant shadow-sm overflow-hidden flex flex-col">
+<!-- Top Section: Key Info -->
+<div class="p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-outline-variant bg-surface">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<h2 class="font-display-lg text-display-lg text-on-surface">SO-1024</h2>
+<span class="px-3 py-1 bg-tertiary-fixed text-on-tertiary-fixed rounded-full font-label-upper text-label-upper font-bold tracking-wider inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                    CONFIRMED
+                                </span>
+</div>
+<p class="font-title-sm text-title-sm text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="apartment">apartment</span>
+                                Acme Corp International
+                            </p>
+</div>
+<div class="flex flex-col gap-2 text-right w-full md:w-auto bg-surface-container-lowest p-4 md:p-0 rounded-lg md:rounded-none border border-outline-variant md:border-none">
+<div class="flex justify-between md:justify-end gap-8 font-body-sm text-body-sm">
+<span class="text-on-surface-variant">Order Date:</span>
+<span class="font-semibold text-on-surface">Oct 24, 2023</span>
+</div>
+<div class="flex justify-between md:justify-end gap-8 font-body-sm text-body-sm">
+<span class="text-on-surface-variant">Expected Ship:</span>
+<span class="font-semibold text-on-surface">Oct 28, 2023</span>
+</div>
+<div class="flex justify-between md:justify-end gap-8 font-body-sm text-body-sm">
+<span class="text-on-surface-variant">Total Amount:</span>
+<span class="font-title-sm text-title-sm text-primary font-bold">$12,450.00</span>
+</div>
+</div>
+</div>
+<!-- Middle Section: Lifecycle Timeline -->
+<div class="p-6 md:p-8 bg-surface-container-lowest border-b border-outline-variant">
+<h3 class="font-label-upper text-label-upper text-on-surface-variant mb-6">Order Lifecycle</h3>
+<div class="relative flex justify-between items-center w-full max-w-4xl mx-auto">
+<!-- Progress Line Background -->
+<div class="absolute top-1/2 left-0 w-full h-1 bg-surface-variant -translate-y-1/2 z-0 rounded-full"></div>
+<!-- Active Progress Line (Current State: Confirmed -> Reserved transition) -->
+<div class="absolute top-1/2 left-0 w-[50%] h-1 bg-primary -translate-y-1/2 z-0 rounded-full"></div>
+<!-- Step 1: Draft -->
+<div class="relative z-10 flex flex-col items-center gap-2 w-24">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center border-4 border-surface shadow-sm">
+<span class="material-symbols-outlined text-[16px]" data-icon="edit_document" style="font-variation-settings: 'FILL' 1;">edit_document</span>
+</div>
+<span class="font-label-upper text-label-upper text-on-surface text-center">Draft</span>
+</div>
+<!-- Step 2: Confirmed -->
+<div class="relative z-10 flex flex-col items-center gap-2 w-24">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center border-4 border-surface shadow-sm">
+<span class="material-symbols-outlined text-[16px]" data-icon="check" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<span class="font-label-upper text-label-upper text-on-surface text-center font-bold">Confirmed</span>
+</div>
+<!-- Step 3: Reserved (Active/In Progress) -->
+<div class="relative z-10 flex flex-col items-center gap-2 w-24">
+<div class="w-8 h-8 rounded-full bg-surface border-2 border-primary text-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[16px]" data-icon="inventory_2">inventory_2</span>
+</div>
+<span class="font-label-upper text-label-upper text-primary text-center font-bold">Reserved</span>
+</div>
+<!-- Step 4: Shipped -->
+<div class="relative z-10 flex flex-col items-center gap-2 w-24 opacity-50">
+<div class="w-8 h-8 rounded-full bg-surface border-2 border-outline-variant text-outline flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]" data-icon="local_shipping">local_shipping</span>
+</div>
+<span class="font-label-upper text-label-upper text-on-surface-variant text-center">Shipped</span>
+</div>
+<!-- Step 5: Invoiced -->
+<div class="relative z-10 flex flex-col items-center gap-2 w-24 opacity-50">
+<div class="w-8 h-8 rounded-full bg-surface border-2 border-outline-variant text-outline flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]" data-icon="receipt">receipt</span>
+</div>
+<span class="font-label-upper text-label-upper text-on-surface-variant text-center">Invoiced</span>
+</div>
+</div>
+</div>
+<!-- Inventory Reservation Alert -->
+<div class="bg-surface-container-low px-6 py-4 flex items-center justify-between border-b border-outline-variant">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-tertiary-fixed rounded-lg text-on-tertiary-fixed">
+<span class="material-symbols-outlined" data-icon="warehouse" style="font-variation-settings: 'FILL' 1;">warehouse</span>
+</div>
+<div>
+<h4 class="font-title-sm text-title-sm text-on-surface">Inventory Status: Ready</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">100% Units Reserved from <strong>Warehouse A</strong></p>
+</div>
+</div>
+<button class="text-primary font-body-sm text-body-sm font-semibold hover:underline flex items-center gap-1">
+                            View Stock Moves
+                            <span class="material-symbols-outlined text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<!-- Bottom Section: Items Table (The Data Density Area) -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-lowest border-b border-outline-variant">
+<th class="px-6 py-3 font-label-upper text-label-upper text-on-surface-variant font-semibold sticky left-0 bg-surface-container-lowest">Product</th>
+<th class="px-6 py-3 font-label-upper text-label-upper text-on-surface-variant font-semibold w-32">SKU</th>
+<th class="px-6 py-3 font-label-upper text-label-upper text-on-surface-variant font-semibold text-right w-24">Qty</th>
+<th class="px-6 py-3 font-label-upper text-label-upper text-on-surface-variant font-semibold text-right w-32">Unit Price</th>
+<th class="px-6 py-3 font-label-upper text-label-upper text-on-surface-variant font-semibold text-right w-32">Taxes</th>
+<th class="px-6 py-3 font-label-upper text-label-upper text-on-surface-variant font-semibold text-right w-32">Subtotal</th>
+</tr>
+</thead>
+<tbody class="font-table-data text-table-data text-on-surface divide-y divide-outline-variant">
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 sticky left-0 group-hover:bg-surface-container-low bg-surface transition-colors flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-variant flex items-center justify-center text-on-surface-variant shrink-0">
+<span class="material-symbols-outlined text-[16px]" data-icon="dns">dns</span>
+</div>
+<span class="font-semibold text-on-surface">Industrial Router X200</span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">NET-RTR-X200</td>
+<td class="px-6 py-4 text-right font-medium">50</td>
+<td class="px-6 py-4 text-right">$150.00</td>
+<td class="px-6 py-4 text-right text-on-surface-variant">10%</td>
+<td class="px-6 py-4 text-right font-semibold">$7,500.00</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 sticky left-0 group-hover:bg-surface-container-low bg-surface transition-colors flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-variant flex items-center justify-center text-on-surface-variant shrink-0">
+<span class="material-symbols-outlined text-[16px]" data-icon="settings_input_component">settings_input_component</span>
+</div>
+<span class="font-semibold text-on-surface">Fiber Optic Cable (10m)</span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">CBL-FBR-10M</td>
+<td class="px-6 py-4 text-right font-medium">100</td>
+<td class="px-6 py-4 text-right">$45.00</td>
+<td class="px-6 py-4 text-right text-on-surface-variant">10%</td>
+<td class="px-6 py-4 text-right font-semibold">$4,500.00</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 sticky left-0 group-hover:bg-surface-container-low bg-surface transition-colors flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-variant flex items-center justify-center text-on-surface-variant shrink-0">
+<span class="material-symbols-outlined text-[16px]" data-icon="power">power</span>
+</div>
+<span class="font-semibold text-on-surface">Rack Mount Power Strip</span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">PWR-STP-RM</td>
+<td class="px-6 py-4 text-right font-medium">10</td>
+<td class="px-6 py-4 text-right">$45.00</td>
+<td class="px-6 py-4 text-right text-on-surface-variant">10%</td>
+<td class="px-6 py-4 text-right font-semibold">$450.00</td>
+</tr>
+</tbody>
+<tfoot class="bg-surface-container-lowest border-t-2 border-outline-variant">
+<tr>
+<td class="px-6 py-4" colspan="4"></td>
+<td class="px-6 py-2 text-right font-body-sm text-body-sm text-on-surface-variant">Untaxed Amount:</td>
+<td class="px-6 py-2 text-right font-body-sm text-body-sm font-semibold">$12,450.00</td>
+</tr>
+<tr>
+<td class="px-6 py-2" colspan="4"></td>
+<td class="px-6 py-2 text-right font-body-sm text-body-sm text-on-surface-variant">Taxes (10%):</td>
+<td class="px-6 py-2 text-right font-body-sm text-body-sm font-semibold">$1,245.00</td>
+</tr>
+<tr>
+<td class="px-6 py-4" colspan="4"></td>
+<td class="px-6 py-4 text-right font-title-sm text-title-sm text-on-surface font-bold border-t border-outline-variant">Total:</td>
+<td class="px-6 py-4 text-right font-title-sm text-title-sm text-primary font-bold border-t border-outline-variant">$13,695.00</td>
+</tr>
+</tfoot>
+</table>
+</div>
+</div>
+<!-- Bento Grid: Supplementary Information -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Traceability Card -->
+<div class="bg-surface rounded-xl border border-outline-variant p-6 shadow-sm flex flex-col">
+<div class="flex items-center gap-3 mb-4">
+<div class="p-2 bg-surface-container rounded-lg text-primary">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+</div>
+<h3 class="font-title-sm text-title-sm text-on-surface font-semibold">Traceability &amp; Fulfillment</h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4 flex-1">
+                            This sales order triggered a manufacturing order to fulfill custom assembly requirements for the Industrial Routers.
+                        </p>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 flex items-center justify-between hover:border-primary transition-colors cursor-pointer group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" data-icon="factory">factory</span>
+<div>
+<p class="font-label-upper text-label-upper text-on-surface-variant">Linked Manufacturing Order</p>
+<p class="font-title-sm text-title-sm text-on-surface font-bold group-hover:text-primary transition-colors">MO-501</p>
+</div>
+</div>
+<span class="px-2 py-1 bg-surface-container text-on-surface-variant rounded text-xs font-semibold">In Progress</span>
+</div>
+</div>
+<!-- Customer Notes / Terms Card -->
+<div class="bg-surface rounded-xl border border-outline-variant p-6 shadow-sm flex flex-col">
+<div class="flex items-center gap-3 mb-4">
+<div class="p-2 bg-surface-container rounded-lg text-secondary">
+<span class="material-symbols-outlined" data-icon="speaker_notes">speaker_notes</span>
+</div>
+<h3 class="font-title-sm text-title-sm text-on-surface font-semibold">Notes &amp; Terms</h3>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 flex-1 font-body-sm text-body-sm text-on-surface-variant">
+<p class="mb-2"><strong class="text-on-surface">Customer Note:</strong> Please ensure the routers are pre-configured with IP range 192.168.100.x before shipping.</p>
+<hr class="my-3 border-outline-variant border-dashed"/>
+<p><strong class="text-on-surface">Payment Terms:</strong> Net 30 Days.</p>
+<p><strong class="text-on-surface">Incoterms:</strong> FOB Origin.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom padding for scroll clearance -->
+<div class="h-16"></div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mini ERP - Manufacturing Kanban</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#131b2e",
+                        "secondary-fixed": "#dae2fd",
+                        "surface-variant": "#d3e4fe",
+                        "surface-dim": "#cbdbf5",
+                        "secondary-container": "#dae2fd",
+                        "on-background": "#0b1c30",
+                        "background": "#f8f9ff",
+                        "on-error-container": "#93000a",
+                        "outline": "#777587",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface-container-low": "#eff4ff",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "outline-variant": "#c7c4d8",
+                        "on-surface-variant": "#464555",
+                        "primary": "#3525cd",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#c3c0ff",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed": "#6ffbbe",
+                        "primary-container": "#4f46e5",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "on-tertiary-container": "#67f4b7",
+                        "surface-container-high": "#dce9ff",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "tertiary": "#005338",
+                        "surface-tint": "#4d44e3",
+                        "surface": "#f8f9ff",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#0f0069",
+                        "on-tertiary-fixed": "#002113",
+                        "on-primary-container": "#dad7ff",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "primary-fixed": "#e2dfff",
+                        "secondary": "#565e74",
+                        "on-surface": "#0b1c30",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "on-secondary-container": "#5c647a",
+                        "tertiary-container": "#006e4b",
+                        "surface-container": "#e5eeff",
+                        "surface-bright": "#f8f9ff",
+                        "inverse-surface": "#213145"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sidebar-width": "260px",
+                        "gutter": "16px",
+                        "header-height": "64px",
+                        "base": "4px",
+                        "container-margin": "24px",
+                        "sidebar-collapsed": "72px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "table-data": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-upper": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "table-data": ["13px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "title-sm": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-upper": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .kanban-scroll::-webkit-scrollbar { height: 6px; }
+        .kanban-scroll::-webkit-scrollbar-track { background: transparent; }
+        .kanban-scroll::-webkit-scrollbar-thumb { background: #c7c4d8; border-radius: 4px; }
+        .kanban-col-scroll::-webkit-scrollbar { width: 4px; }
+        .kanban-col-scroll::-webkit-scrollbar-track { background: transparent; }
+        .kanban-col-scroll::-webkit-scrollbar-thumb { background: transparent; border-radius: 4px; }
+        .kanban-col-scroll:hover::-webkit-scrollbar-thumb { background: #c7c4d8; }
+        
+        .kanban-card { transition: all 0.2s ease; cursor: grab; }
+        .kanban-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.08); }
+        .kanban-card:active { cursor: grabbing; transform: scale(0.98); }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md overflow-hidden h-screen flex">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-full overflow-y-auto w-sidebar-width shrink-0 bg-surface-container-low border-r border-outline-variant duration-200 ease-in-out">
+<div class="h-header-height flex items-center px-gutter shrink-0">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">factory</span>
+</div>
+<div>
+<div class="font-title-sm text-title-sm font-black text-on-background">Mini ERP</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant text-[11px]">Enterprise Edition</div>
+</div>
+</div>
+</div>
+<div class="px-gutter py-4">
+<button class="w-full bg-primary text-on-primary font-body-sm text-body-sm py-2 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-surface-tint transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span> New Record
+            </button>
+</div>
+<nav class="flex-1 px-3 py-2 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="inventory_2">inventory_2</span>
+                Products
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="receipt_long">receipt_long</span>
+                Sales Orders
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="shopping_cart">shopping_cart</span>
+                Purchase Orders
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="account_tree">account_tree</span>
+                Bills of Materials
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-secondary-container text-on-secondary-container border-l-4 border-primary font-body-sm text-body-sm hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="factory">factory</span>
+                Manufacturing Orders
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="warehouse">warehouse</span>
+                Inventory
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="history">history</span>
+                Audit Logs
+            </a>
+</nav>
+<div class="mt-auto px-3 py-4 border-t border-outline-variant space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings">settings</span>
+                Settings
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="help">help</span>
+                Support
+            </a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col min-w-0 h-full relative">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center px-gutter w-full sticky top-0 z-40 bg-surface border-b border-outline-variant h-header-height shrink-0">
+<div class="flex items-center gap-4 md:hidden">
+<button class="text-on-surface-variant p-2 rounded-lg hover:bg-surface-container">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="font-headline-md text-headline-md font-bold text-on-background">Mini ERP</div>
+</div>
+<div class="flex-1 max-w-xl hidden md:flex items-center gap-4">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+<input class="w-full h-10 pl-10 pr-4 bg-surface-container-low border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="Search orders, products..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="h-6 w-px bg-outline-variant mx-2"></div>
+<button class="text-on-surface-variant font-body-sm text-body-sm hover:text-primary transition-colors cursor-pointer active:opacity-80 mr-4">Help</button>
+<div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden border border-outline-variant cursor-pointer active:opacity-80">
+<img alt="User Profile Avatar" class="w-full h-full object-cover" data-alt="A small circular avatar showing a professional portrait of a person in a modern enterprise setting, used for profile identification in a light mode UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB13jRhsX7blmjRe59OqJyCMZ61RhJ7shDzZcMhilwKs1GHn_1l8r4rbE1_WB8yk2znkRpHOhr38XzJ3A9Vj5xx_zPqrMfWBd5bGpmAFCVvcFAhJHnsW84tqXtQ2Pbw-IdgoV5V6DKlXiACh9K3zrURcT0k6WCxsnoUrj4ErxBKUG1DN_t_goHhaYKJr5dNoJXmPbsEQmqxpfH1QUWU6JT5_ZiDvoAdncAdTNfx6cSMPjBs_5xCjMIVqRnG82CCztB8neuh9DfKs5A7"/>
+</div>
+</div>
+</header>
+<!-- Page Header -->
+<div class="px-container-margin py-6 shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant bg-surface">
+<div>
+<h1 class="font-display-lg text-display-lg text-on-background">Manufacturing Orders</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Manage production flow and work center capacity.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex bg-surface-container-low rounded-lg p-1 border border-outline-variant">
+<button class="px-3 py-1.5 rounded bg-surface shadow-sm text-on-surface font-body-sm text-body-sm flex items-center gap-2 border border-outline-variant">
+<span class="material-symbols-outlined text-[18px]">view_kanban</span>
+                        Kanban
+                    </button>
+<button class="px-3 py-1.5 rounded text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm flex items-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[18px]">table_rows</span>
+                        List
+                    </button>
+</div>
+<button class="bg-primary text-on-primary h-9 px-4 rounded-lg font-body-sm text-body-sm font-semibold hover:bg-surface-tint transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span> Create MO
+                </button>
+</div>
+</div>
+<!-- Kanban Board Area -->
+<main class="flex-1 overflow-x-auto overflow-y-hidden bg-background p-container-margin kanban-scroll relative">
+<div class="flex h-full gap-6 pb-4 items-start w-max min-w-full">
+<!-- Column: Draft -->
+<div class="w-[320px] flex flex-col h-full bg-surface-container-low rounded-xl border border-outline-variant shrink-0">
+<div class="p-4 border-b border-outline-variant flex items-center justify-between shrink-0 bg-surface/50 rounded-t-xl">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<h3 class="font-title-sm text-title-sm text-on-background">Draft</h3>
+<span class="bg-surface-variant text-on-surface-variant font-label-upper text-label-upper px-2 py-0.5 rounded-full ml-1">2</span>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[20px]">more_horiz</span></button>
+</div>
+<div class="p-3 flex-1 overflow-y-auto kanban-col-scroll space-y-3">
+<!-- Card 1 -->
+<div class="kanban-card bg-surface p-4 rounded-lg border border-outline-variant shadow-sm relative group">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-2">
+<span class="font-label-upper text-label-upper text-on-surface-variant font-bold">MO-215</span>
+</div>
+<button class="opacity-0 group-hover:opacity-100 text-on-surface-variant hover:text-on-surface transition-opacity">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+</div>
+<h4 class="font-body-md text-body-md font-semibold text-on-surface mb-1">Industrial Sensor V2</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">Qty: 50 units</p>
+<div class="flex items-center gap-2 mb-4">
+<span class="bg-surface-container text-on-surface font-body-sm text-[11px] px-2 py-1 rounded flex items-center gap-1 border border-outline-variant">
+<span class="material-symbols-outlined text-[14px]">receipt</span> SO-1042
+                                </span>
+</div>
+<div class="flex justify-between items-center mt-2 pt-3 border-t border-surface-variant">
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant border-2 border-surface flex items-center justify-center text-[10px] font-bold text-on-surface-variant overflow-hidden">
+<img alt="Assignee" class="w-full h-full object-cover" data-alt="Small circular avatar of an employee in a modern dashboard interface, light mode." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjTRw2HkMrmstKAm8P5rdTeoz0HnHssAZ9Pxi9Gbhu0yfAVpsP6D90F04lzFZqa4MtdhjPJZmbewlWVUyCz_4_bfFo1sr003JifvdE2n9VSump6iBi3xxz7I1IGF-NA92rGEWncIea8hBw-R9w-2cyLX5S1u5GCMMA1L84prrkTzuKEERMLQRPmXLFMbs8Xqbr2pmEm8zf7Y6uzMOEar9paVmCQE0oLO-ip6cMs0if2Db6C_RUhVp_k2Ttd8d_s8Zw37A0u-Y_5Qvj"/>
+</div>
+</div>
+<span class="bg-surface-container-high text-on-surface-variant font-body-sm text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span> Oct 24
+                                </span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="kanban-card bg-surface p-4 rounded-lg border border-outline-variant shadow-sm relative group">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-2">
+<span class="font-label-upper text-label-upper text-on-surface-variant font-bold">MO-216</span>
+</div>
+<button class="opacity-0 group-hover:opacity-100 text-on-surface-variant hover:text-on-surface transition-opacity">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+</div>
+<h4 class="font-body-md text-body-md font-semibold text-on-surface mb-1">Aluminum Casing Type B</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">Qty: 200 units</p>
+<div class="flex items-center gap-2 mb-4">
+<span class="bg-error-container text-on-error-container font-body-sm text-[11px] px-2 py-1 rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">warning</span> Missing Components
+                                </span>
+</div>
+<div class="flex justify-between items-center mt-2 pt-3 border-t border-surface-variant">
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant border-2 border-surface flex items-center justify-center text-[10px] font-bold text-on-surface-variant overflow-hidden">
+<img alt="Assignee" class="w-full h-full object-cover" data-alt="Small circular avatar of an employee in a modern dashboard interface, light mode." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCa1i6PQCtgXXNy1TTmb3WC2cRR-XSuptc29Fq5EugNSeBQ0kW0rVkz8IQRn0OkdB3V8sYq1gC_I9wPVUmHN9qIy5LX43W1Q1dRL4ITmEs3FZsnv8iKZBouWf1ft18SYVqG8yJdy2KiPkt0b4CMIgQZ55BYxflG4fPOupvLVujMZD9qGIVdxsy6nqRWcgYleGV6LQNWzkBIOuavLFJCicKwcFTGy3OIl8MMvxTdG1czm1g3XgQYjfqH-bvbatx-DNpaJeZN_xSRPyFn"/>
+</div>
+</div>
+<span class="text-on-surface-variant font-body-sm text-[11px] flex items-center gap-1">
+                                    No deadline
+                                </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: Confirmed -->
+<div class="w-[320px] flex flex-col h-full bg-surface-container-low rounded-xl border border-outline-variant shrink-0">
+<div class="p-4 border-b border-outline-variant flex items-center justify-between shrink-0 bg-surface/50 rounded-t-xl">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary-fixed-dim"></div>
+<h3 class="font-title-sm text-title-sm text-on-background">Confirmed</h3>
+<span class="bg-surface-variant text-on-surface-variant font-label-upper text-label-upper px-2 py-0.5 rounded-full ml-1">1</span>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[20px]">more_horiz</span></button>
+</div>
+<div class="p-3 flex-1 overflow-y-auto kanban-col-scroll space-y-3">
+<!-- Card 3 -->
+<div class="kanban-card bg-surface p-4 rounded-lg border border-outline-variant shadow-sm relative group border-l-4 border-l-primary-fixed-dim">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-2">
+<span class="font-label-upper text-label-upper text-on-surface-variant font-bold">MO-212</span>
+</div>
+<button class="opacity-0 group-hover:opacity-100 text-on-surface-variant hover:text-on-surface transition-opacity">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+</div>
+<h4 class="font-body-md text-body-md font-semibold text-on-surface mb-1">Copper Wiring Harness</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">Qty: 500 meters</p>
+<div class="flex items-center gap-2 mb-4">
+<span class="bg-surface-container text-on-surface font-body-sm text-[11px] px-2 py-1 rounded flex items-center gap-1 border border-outline-variant">
+<span class="material-symbols-outlined text-[14px]">receipt</span> SO-1038
+                                </span>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-1.5 mb-2">
+<div class="bg-primary-fixed-dim h-1.5 rounded-full" style="width: 0%"></div>
+</div>
+<div class="flex justify-between text-[11px] text-on-surface-variant mb-3">
+<span>Ready to start</span>
+<span>0%</span>
+</div>
+<div class="flex justify-between items-center pt-3 border-t border-surface-variant">
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant border-2 border-surface flex items-center justify-center text-[10px] font-bold text-on-surface-variant overflow-hidden">
+<img alt="Assignee" class="w-full h-full object-cover" data-alt="Small circular avatar of an employee in a modern dashboard interface, light mode." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEBaE3qUOaXQgzvmyupQc2GlVmgCgLR8IiUe2sDeY5JmH5l2JajKmWpxg9o5ExrZLdmQbcWI1XGEmyG95jTPv53GL-Hv8gzyrT5z0uclmtaC3B_tueMlDwtELJoxv_sth811zoK2wXFg195WfJm-F6KqIfie8VyKvSmgtDA0mqsa6lZRYE2HHS31V1uGCaMjiEqL-aYJ9J3uC7souEAG57AKIUcfgiCvPXy8K1Crg0tLVsPBXnwpdIGN7HYkL1PC0GuzWNFIA0g_EA"/>
+</div>
+</div>
+<span class="bg-surface-container-high text-on-surface-variant font-body-sm text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span> Oct 22
+                                </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: In Progress -->
+<div class="w-[320px] flex flex-col h-full bg-surface-container-low rounded-xl border border-outline-variant shrink-0 ring-1 ring-primary/20 shadow-sm">
+<div class="p-4 border-b border-primary/20 flex items-center justify-between shrink-0 bg-primary/5 rounded-t-xl">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+<h3 class="font-title-sm text-title-sm text-primary font-bold">In Progress</h3>
+<span class="bg-primary/10 text-primary font-label-upper text-label-upper px-2 py-0.5 rounded-full ml-1">2</span>
+</div>
+<button class="text-primary hover:text-primary-fixed-variant"><span class="material-symbols-outlined text-[20px]">more_horiz</span></button>
+</div>
+<div class="p-3 flex-1 overflow-y-auto kanban-col-scroll space-y-3 bg-surface-container-low/50">
+<!-- Card 4 (Hero Active Card) -->
+<div class="kanban-card bg-surface p-4 rounded-lg border border-primary/30 shadow-md relative group border-l-4 border-l-primary ring-1 ring-primary/10">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-2">
+<span class="font-label-upper text-label-upper text-primary font-bold">MO-202</span>
+</div>
+<button class="opacity-0 group-hover:opacity-100 text-on-surface-variant hover:text-on-surface transition-opacity">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+</div>
+<h4 class="font-body-md text-body-md font-semibold text-on-surface mb-1">Logic Board Assembly Z</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">Qty: 120 units</p>
+<div class="flex flex-wrap items-center gap-2 mb-4">
+<span class="bg-primary-container/10 text-primary font-body-sm text-[11px] px-2 py-1 rounded flex items-center gap-1 border border-primary/20">
+<span class="material-symbols-outlined text-[14px]">receipt</span> SO-1024
+                                </span>
+<span class="bg-tertiary-container/10 text-tertiary font-body-sm text-[11px] px-2 py-1 rounded flex items-center gap-1 border border-tertiary/20">
+<span class="material-symbols-outlined text-[14px]">precision_manufacturing</span> Line A
+                                </span>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-2 mb-1">
+<div class="bg-primary h-2 rounded-full relative" style="width: 65%">
+<div class="absolute right-0 top-0 bottom-0 w-4 bg-white/20 animate-[pulse_2s_ease-in-out_infinite] rounded-r-full"></div>
+</div>
+</div>
+<div class="flex justify-between text-[11px] text-on-surface-variant mb-3 font-medium">
+<span class="text-primary">Assembling components</span>
+<span class="text-primary">65%</span>
+</div>
+<div class="flex justify-between items-center pt-3 border-t border-surface-variant">
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant border-2 border-surface flex items-center justify-center text-[10px] font-bold text-on-surface-variant overflow-hidden z-10">
+<img alt="Assignee" class="w-full h-full object-cover" data-alt="Small circular avatar of an employee in a modern dashboard interface, light mode." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPAlyXBXMn7AOXOvpnUBSGHXJJz11U-RmYP_LY9vQkwpWGIl0yLvXEIhT8-gZ3QMSb-UXeY3Eh4QYC7F2vdkw0LURqClYCJJM2QyaHXrxLQmxGxEqSjhfyMpKwY7mmEprpftnoyprr-KAwHKcHmpal1fz4w-DYMUU_pTvbvYZpsofro1O33lnHDm414AR57EeJuwQqwTOXOXURJIk-8Yx9U1EHWel-0BR1P-cyrJAiViaii5DxTg2U_h8FY0777EIuh0jPqSowA_71"/>
+</div>
+<div class="w-6 h-6 rounded-full bg-surface-variant border-2 border-surface flex items-center justify-center text-[10px] font-bold text-on-surface-variant overflow-hidden z-0">
+<img alt="Assignee" class="w-full h-full object-cover" data-alt="Small circular avatar of an employee in a modern dashboard interface, light mode." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBos-LcqjrV231B_0sefWqZmhLz0ye_UcwjRyX1fJFx2twJbbaXCpF3bCI5b2pCJ8xKlm3DhgwvAhXAeyYbcwbBFZsBiz8mAcpg9OHbz0WXPGaxWBcqK0amguMAFV45_f1LEy2C9Kroy9rn-n7kyzjAVLLmwCbgLYw-vMuZpjLjsl2GSsKuuwiHMl9STlP4DMqcNWylEUBbJUFzbz4DKVds4tugbwPgfKhnlKDXY8Lhfc7Eo_TJxr7z3rGnB3h0-uG4RLfCpxIHwqzp"/>
+</div>
+</div>
+<span class="bg-error-container text-on-error-container font-body-sm text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1 font-semibold">
+<span class="material-symbols-outlined text-[14px]">schedule</span> Today
+                                </span>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="kanban-card bg-surface p-4 rounded-lg border border-outline-variant shadow-sm relative group border-l-4 border-l-primary/60">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-2">
+<span class="font-label-upper text-label-upper text-on-surface-variant font-bold">MO-210</span>
+</div>
+<button class="opacity-0 group-hover:opacity-100 text-on-surface-variant hover:text-on-surface transition-opacity">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+</div>
+<h4 class="font-body-md text-body-md font-semibold text-on-surface mb-1">Power Supply Unit 500W</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">Qty: 75 units</p>
+<div class="flex items-center gap-2 mb-4">
+<span class="bg-surface-container text-on-surface font-body-sm text-[11px] px-2 py-1 rounded flex items-center gap-1 border border-outline-variant">
+<span class="material-symbols-outlined text-[14px]">inventory_2</span> Build for Stock
+                                </span>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-1.5 mb-2">
+<div class="bg-primary/60 h-1.5 rounded-full" style="width: 30%"></div>
+</div>
+<div class="flex justify-between text-[11px] text-on-surface-variant mb-3">
+<span>Quality Check</span>
+<span>30%</span>
+</div>
+<div class="flex justify-between items-center pt-3 border-t border-surface-variant">
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant border-2 border-surface flex items-center justify-center text-[10px] font-bold text-on-surface-variant overflow-hidden">
+<img alt="Assignee" class="w-full h-full object-cover" data-alt="Small circular avatar of an employee in a modern dashboard interface, light mode." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAL5ZX-wUWYYQ3s_YeAlITbh9Q3f6IEvglOf9zJ60XA18Bh-GTEbum24612KIMZekwCI3SCf3Zi2ubZffwPYZkrP2gHIeURBrPBUkY1CDFMdro_pAYgn-arm5wl2A2ddpsyjH2tKSxHiYtAxD-t6O3uYmD0B98MlF2sh4ZHyJa5Fm2HThGt5ktADmfjsEsLS7wh3T_n8T5zRo7pfO6mQAWGBVsCXkYowglK2O4m2VrhflZtOi4lEb-TFkx7gehDYe_9mzIgHL5pKpl-"/>
+</div>
+</div>
+<span class="bg-surface-container-high text-on-surface-variant font-body-sm text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span> Oct 21
+                                </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: Done -->
+<div class="w-[320px] flex flex-col h-full bg-surface-container-low rounded-xl border border-outline-variant shrink-0 opacity-80">
+<div class="p-4 border-b border-outline-variant flex items-center justify-between shrink-0 bg-surface/30 rounded-t-xl">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+<h3 class="font-title-sm text-title-sm text-on-background">Done</h3>
+<span class="bg-surface-variant text-on-surface-variant font-label-upper text-label-upper px-2 py-0.5 rounded-full ml-1">1</span>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[20px]">more_horiz</span></button>
+</div>
+<div class="p-3 flex-1 overflow-y-auto kanban-col-scroll space-y-3">
+<!-- Card 6 -->
+<div class="kanban-card bg-surface p-4 rounded-lg border border-outline-variant shadow-sm relative group border-l-4 border-l-tertiary">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-2">
+<span class="font-label-upper text-label-upper text-on-surface-variant font-bold line-through">MO-198</span>
+</div>
+</div>
+<h4 class="font-body-md text-body-md font-semibold text-on-surface mb-1 text-on-surface-variant">LCD Display Module</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">Qty: 300 units</p>
+<div class="flex items-center gap-2 mb-4 opacity-70">
+<span class="bg-surface-container text-on-surface font-body-sm text-[11px] px-2 py-1 rounded flex items-center gap-1 border border-outline-variant">
+<span class="material-symbols-outlined text-[14px]">receipt</span> SO-1015
+                                </span>
+</div>
+<div class="flex justify-between items-center pt-3 border-t border-surface-variant">
+<div class="flex -space-x-2 opacity-70">
+<div class="w-6 h-6 rounded-full bg-surface-variant border-2 border-surface flex items-center justify-center text-[10px] font-bold text-on-surface-variant overflow-hidden">
+<img alt="Assignee" class="w-full h-full object-cover" data-alt="Small circular avatar of an employee in a modern dashboard interface, light mode." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbGipupGE6X48K8QzZfAnk6A5EcX3WDJzc2SQlgbUtm8J0TL5oHv-ki4y3BlEp0x_cvzDoeoU1vdDghXd1BHAN1Dos60OJVEIN2imjhfSyMmKh1-NR0y35NK3AaoTRdLODSK3e-OGTRBFBXqHkqCNMsWIzWOFW0h4230CG0Hl3nsZu7g2qOi7JXHYOs7hkhwB1k0mohMPfnH5BGFzhGnHldl-PFa3BEwRh5Iv3pSlOTVxKY7LkPOiAjmpDIdxtu9oS5MX3YrxG5ouw"/>
+</div>
+</div>
+<span class="text-tertiary font-body-sm text-[11px] flex items-center gap-1 font-semibold">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> Completed
+                                </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Add Column Placeholder -->
+<button class="w-[320px] h-[100px] rounded-xl border-2 border-dashed border-outline-variant flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:border-outline hover:bg-surface-container-low transition-all shrink-0">
+<span class="flex items-center gap-2 font-body-md font-medium"><span class="material-symbols-outlined">add</span> Add Column</span>
+</button>
+</div>
+</main>
+</div>
+</body></html>

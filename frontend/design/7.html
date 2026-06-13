@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Audit Logs - Mini ERP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed": "#131b2e",
+                      "secondary-fixed": "#dae2fd",
+                      "surface-variant": "#d3e4fe",
+                      "surface-dim": "#cbdbf5",
+                      "secondary-container": "#dae2fd",
+                      "on-background": "#0b1c30",
+                      "background": "#f8f9ff",
+                      "on-error-container": "#93000a",
+                      "outline": "#777587",
+                      "surface-container-highest": "#d3e4fe",
+                      "surface-container-low": "#eff4ff",
+                      "primary-fixed-dim": "#c3c0ff",
+                      "on-error": "#ffffff",
+                      "error": "#ba1a1a",
+                      "outline-variant": "#c7c4d8",
+                      "on-surface-variant": "#464555",
+                      "primary": "#3525cd",
+                      "on-tertiary": "#ffffff",
+                      "inverse-primary": "#c3c0ff",
+                      "on-secondary-fixed-variant": "#3f465c",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed": "#6ffbbe",
+                      "primary-container": "#4f46e5",
+                      "on-secondary": "#ffffff",
+                      "inverse-on-surface": "#eaf1ff",
+                      "on-tertiary-container": "#67f4b7",
+                      "surface-container-high": "#dce9ff",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "tertiary": "#005338",
+                      "surface-tint": "#4d44e3",
+                      "surface": "#f8f9ff",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-fixed": "#0f0069",
+                      "on-tertiary-fixed": "#002113",
+                      "on-primary-container": "#dad7ff",
+                      "on-primary-fixed-variant": "#3323cc",
+                      "primary-fixed": "#e2dfff",
+                      "secondary": "#565e74",
+                      "on-surface": "#0b1c30",
+                      "on-primary": "#ffffff",
+                      "secondary-fixed-dim": "#bec6e0",
+                      "on-secondary-container": "#5c647a",
+                      "tertiary-container": "#006e4b",
+                      "surface-container": "#e5eeff",
+                      "surface-bright": "#f8f9ff",
+                      "inverse-surface": "#213145"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sidebar-width": "260px",
+                      "gutter": "16px",
+                      "header-height": "64px",
+                      "base": "4px",
+                      "container-margin": "24px",
+                      "sidebar-collapsed": "72px"
+              },
+              "fontFamily": {
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "table-data": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "title-sm": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "label-upper": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-sm": [
+                              "13px",
+                              {
+                                      "lineHeight": "18px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "table-data": [
+                              "13px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "title-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-upper": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface h-screen overflow-hidden flex font-body-sm text-body-sm">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col h-full overflow-y-auto w-sidebar-width shrink-0 bg-surface-container-low dark:bg-surface-container-highest border-r border-outline-variant dark:border-outline duration-200 ease-in-out">
+<div class="p-gutter border-b border-outline-variant dark:border-outline flex items-center gap-3">
+<img alt="Company Logo" class="w-8 h-8 rounded-lg object-cover" data-alt="A minimalist geometric logo design featuring overlapping translucent squares in varying shades of indigo and slate blue, set against a pristine white background. The aesthetic is clean, corporate, and modern, representing enterprise software precision. The lighting is soft and even, highlighting the clean lines of the vector-style artwork." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeUC6EhC1u-woKV5DFTOOZTzU2zsaVfTuFIezwGHxWieu6oY0h3xl-Cyjx9ktX38YZgnDhNakPnTyU-4DHnskNd573Yiw2LmMYn5wbwRcHsp8MAeMouDjyvA2jhX-HixiBqVZ_86ydKscYTKbxVYVJsaW01gCQ6Omfmz8Gr4OnCJ5RnkNL_M8SqJt7XwUhDOCgUlSPwapOnzOeWQ74ei17H2y9st-ASsl3ouT1lmk507OHEbghDpJHYJeeLaYN5AepyEQTjtZT3hRC"/>
+<div>
+<div class="font-title-sm text-title-sm font-black text-on-background">Mini ERP</div>
+<div class="text-[11px] text-on-surface-variant">Enterprise Edition</div>
+</div>
+</div>
+<div class="p-4">
+<button class="w-full bg-primary hover:bg-primary/90 text-on-primary rounded-lg py-2 px-4 flex items-center justify-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span class="font-title-sm text-title-sm text-sm">New Record</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto py-2">
+<a class="flex items-center gap-3 px-gutter py-2.5 mx-2 rounded-lg text-on-surface-variant dark:text-on-secondary-fixed-variant hover:bg-surface-container-high dark:hover:bg-surface-dim transition-all mb-1" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-gutter py-2.5 mx-2 rounded-lg text-on-surface-variant dark:text-on-secondary-fixed-variant hover:bg-surface-container-high dark:hover:bg-surface-dim transition-all mb-1" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+                Products
+            </a>
+<a class="flex items-center gap-3 px-gutter py-2.5 mx-2 rounded-lg text-on-surface-variant dark:text-on-secondary-fixed-variant hover:bg-surface-container-high dark:hover:bg-surface-dim transition-all mb-1" href="#">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+                Sales Orders
+            </a>
+<a class="flex items-center gap-3 px-gutter py-2.5 mx-2 rounded-lg text-on-surface-variant dark:text-on-secondary-fixed-variant hover:bg-surface-container-high dark:hover:bg-surface-dim transition-all mb-1" href="#">
+<span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+                Purchase Orders
+            </a>
+<a class="flex items-center gap-3 px-gutter py-2.5 mx-2 rounded-lg text-on-surface-variant dark:text-on-secondary-fixed-variant hover:bg-surface-container-high dark:hover:bg-surface-dim transition-all mb-1" href="#">
+<span class="material-symbols-outlined text-[20px]">account_tree</span>
+                Bills of Materials
+            </a>
+<a class="flex items-center gap-3 px-gutter py-2.5 mx-2 rounded-lg text-on-surface-variant dark:text-on-secondary-fixed-variant hover:bg-surface-container-high dark:hover:bg-surface-dim transition-all mb-1" href="#">
+<span class="material-symbols-outlined text-[20px]">factory</span>
+                Manufacturing Orders
+            </a>
+<a class="flex items-center gap-3 px-gutter py-2.5 mx-2 rounded-lg text-on-surface-variant dark:text-on-secondary-fixed-variant hover:bg-surface-container-high dark:hover:bg-surface-dim transition-all mb-1" href="#">
+<span class="material-symbols-outlined text-[20px]">warehouse</span>
+                Inventory
+            </a>
+<a class="flex items-center gap-3 px-gutter py-2.5 mx-2 rounded-lg bg-secondary-container dark:bg-primary-container text-on-secondary-container dark:text-on-primary-container border-l-4 border-primary transition-all mb-1" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">history</span>
+                Audit Logs
+            </a>
+</div>
+<div class="p-2 border-t border-outline-variant dark:border-outline mt-auto">
+<a class="flex items-center gap-3 px-gutter py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+                Settings
+            </a>
+<a class="flex items-center gap-3 px-gutter py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">help</span>
+                Support
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+<!-- Mobile Header (Visible only on md-) -->
+<header class="md:hidden flex justify-between items-center px-gutter w-full sticky top-0 z-40 bg-surface dark:bg-surface-container-low border-b border-outline-variant dark:border-outline h-header-height font-body-md text-body-md">
+<div class="flex items-center gap-3">
+<button class="text-on-surface-variant cursor-pointer active:opacity-80 p-1">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="font-headline-md text-headline-md font-bold text-on-background dark:text-on-surface">Mini ERP</div>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined cursor-pointer active:opacity-80">search</span>
+<img alt="User Profile Avatar" class="w-8 h-8 rounded-full border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCh7EmEhdKE-_YmUkBM8VbD0rF0G2r5vqRj86mnE3zrv2lyRhqAScKn4HDp9zYbdjeFJ3K6CWV1vq2l4ImxauUX4AL8FOBQKvL7owp12A7ULJgG0FKowNLxBEQf0DxdyQsAIuPcWzpYj4NdPgm8yNQ4PDz0GxXiiznDCixLKutDWZynHDZgnmYY2lE2Dg6OwNZUbXwsQYrVZWJviGTqWudY0p1HurIXF6jfbmVcY5ZeJ1dZ7EXAmTCZUI2IvNbOrak6K8JnW_ObmdXA"/>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 overflow-y-auto p-container-margin bg-surface-bright">
+<div class="max-w-[1200px] mx-auto">
+<!-- Page Header & Filters -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+<div>
+<h1 class="font-display-lg text-display-lg text-on-background mb-1">Audit Logs</h1>
+<p class="text-on-surface-variant font-body-md text-body-md">Review system activity and historical changes.</p>
+</div>
+<div class="flex flex-wrap items-center gap-3">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="pl-9 pr-4 py-2 border border-outline-variant rounded-lg text-sm w-full sm:w-64 focus:ring-2 focus:ring-primary focus:border-primary outline-none bg-surface-container-lowest text-on-surface" placeholder="Search logs..." type="text"/>
+</div>
+<select class="border border-outline-variant rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none bg-surface-container-lowest text-on-surface">
+<option>All Modules</option>
+<option>Manufacturing</option>
+<option>Sales</option>
+<option>Inventory</option>
+</select>
+<button class="flex items-center gap-2 px-3 py-2 border border-outline-variant rounded-lg text-sm hover:bg-surface-container-low transition-colors bg-surface-container-lowest text-on-surface">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                            Filters
+                        </button>
+</div>
+</div>
+<!-- Timeline View -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6">
+<div class="relative border-l border-outline-variant ml-4 space-y-8 pb-4">
+<!-- Entry 1 -->
+<div class="relative pl-6">
+<!-- Timeline Dot -->
+<div class="absolute -left-[5px] top-1 w-2.5 h-2.5 rounded-full bg-primary ring-4 ring-surface-container-lowest"></div>
+<div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+<div class="flex items-start gap-4">
+<img alt="Sarah Chen" class="w-10 h-10 rounded-full border border-outline-variant mt-1" data-alt="A professional headshot of a young asian woman with dark hair, smiling slightly, wearing a neutral blazer, set against a light gray background, suitable for an enterprise software avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGzl98N7L6W7q_s_t7-ooW8L3sxZXobyysBA1b9bTI5FgYJIUzwWBCWJNLxJiJqIVwrVNsuCypmnsemnkFkM_xPrmzRXjEKIBLAhNZXvPSKq_eDi2MAQLUitHsQMYAjVIK-pFulihoHXY1QHxU6Kd0joQeeUlv_Du2vBEhCslsK8iuTooOURny_k0GW9cpvbLP0au6NUOSoRwqeLw35XASYZ2dbxRm-R_ASJ3lbyr9Gey7fuf9VCPDQTQ5mzxkslJWs0un3zD7Y2Eo"/>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="font-title-sm text-title-sm text-on-background text-sm">Sarah Chen</span>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-surface-container-high text-primary uppercase tracking-wider">Updated</span>
+<span class="text-on-surface-variant text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">factory</span>
+                                                Manufacturing Order #MO-2023-089
+                                            </span>
+</div>
+<div class="text-on-surface-variant text-xs mb-3">Today at 10:42 AM</div>
+<!-- Diff View -->
+<div class="bg-surface-container-low rounded-lg p-3 text-sm border border-outline-variant/50 max-w-2xl">
+<div class="grid grid-cols-[100px_1fr] gap-2 mb-2">
+<div class="text-on-surface-variant font-medium">Status</div>
+<div class="flex items-center gap-2">
+<span class="line-through text-on-surface-variant/70">Planned</span>
+<span class="material-symbols-outlined text-[14px] text-on-surface-variant">arrow_right_alt</span>
+<span class="text-on-surface font-medium">In Progress</span>
+</div>
+</div>
+<div class="grid grid-cols-[100px_1fr] gap-2">
+<div class="text-on-surface-variant font-medium">Start Date</div>
+<div class="flex items-center gap-2">
+<span class="line-through text-on-surface-variant/70">Oct 24, 2023</span>
+<span class="material-symbols-outlined text-[14px] text-on-surface-variant">arrow_right_alt</span>
+<span class="text-on-surface font-medium bg-secondary-container text-on-secondary-container px-1 rounded">Oct 25, 2023</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Entry 2 -->
+<div class="relative pl-6">
+<div class="absolute -left-[5px] top-1 w-2.5 h-2.5 rounded-full bg-tertiary ring-4 ring-surface-container-lowest"></div>
+<div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center text-on-surface-variant font-bold mt-1">
+                                        MR
+                                    </div>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="font-title-sm text-title-sm text-on-background text-sm">Marcus Reed</span>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-tertiary/10 text-tertiary uppercase tracking-wider">Created</span>
+<span class="text-on-surface-variant text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">inventory_2</span>
+                                                Product Item
+                                            </span>
+</div>
+<div class="text-on-surface-variant text-xs mb-3">Yesterday at 4:15 PM</div>
+<div class="text-sm text-on-surface bg-surface-container-low p-3 rounded-lg border border-outline-variant/50 max-w-2xl">
+                                            Created new item: <span class="font-medium">Industrial Widget V2 (SKU: WID-IND-V2)</span> with initial stock of 0 units.
+                                        </div>
+</div>
+</div>
+</div>
+</div>
+<!-- Entry 3 -->
+<div class="relative pl-6">
+<div class="absolute -left-[5px] top-1 w-2.5 h-2.5 rounded-full bg-error ring-4 ring-surface-container-lowest"></div>
+<div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+<div class="flex items-start gap-4">
+<img alt="System Admin" class="w-10 h-10 rounded-full border border-outline-variant mt-1" data-alt="A generic system administrator icon representing automated or high-level system actions, clean and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhtzv3DzBACJEsi0edjrXWdHL2M7Edi1ehG2tSKRCFdBk1_w3lZU0VHceNlWkeJs3FOEbGINadMLZRTDVU5sj9GCZLqth_4uBKZBkUJ1R7Wck6t3x1kgB1c_b4gD0vo7JsG0bRtWFvdrCYKAVJovTnbV9UvuOj7-lPb2d6fUCh8QHxaoNC8Js6q9YRXKDm4rwYhbzIsjuYwtqPHMh5ysWNMhJEVA_Z_lio2DfqhRKn1arAlM7LFDHVgKPE_GZLgfHBrM3C-YyVuX_J"/>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="font-title-sm text-title-sm text-on-background text-sm">System Admin</span>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-error-container text-on-error-container uppercase tracking-wider">Deleted</span>
+<span class="text-on-surface-variant text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">receipt_long</span>
+                                                Draft Sales Order
+                                            </span>
+</div>
+<div class="text-on-surface-variant text-xs mb-3">Oct 23, 2023 at 11:30 AM</div>
+<div class="text-sm text-on-surface bg-error-container/30 p-3 rounded-lg border border-error/20 max-w-2xl text-on-error-container">
+                                            Deleted abandoned draft order <span class="font-medium">SO-DRAFT-992</span> (Reason: Auto-cleanup of expired drafts).
+                                        </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-6 flex justify-center border-t border-outline-variant pt-6">
+<button class="text-primary font-medium hover:text-primary/80 transition-colors text-sm flex items-center gap-1">
+                            Load More
+                            <span class="material-symbols-outlined text-[18px]">expand_more</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
