@@ -1,12 +1,25 @@
 import type {
   ConfirmationResult,
   DeliveryRequest,
+  ImportedOrder,
   SalesOrder,
   SalesOrderCreate,
   SalesOrderStatus,
 } from "@/types/sales";
 
 import { api } from "./axios";
+
+/** AI-extract a customer order from a PDF (review only; creates nothing). */
+export const importSalesOrderPdf = (file: File): Promise<ImportedOrder> => {
+  const form = new FormData();
+  form.append("file", file);
+  return api
+    .post<ImportedOrder>("/sales-orders/import-pdf", form, {
+      // Let the browser set multipart/form-data + boundary (drop the JSON default).
+      headers: { "Content-Type": undefined as unknown as string },
+    })
+    .then((r) => r.data);
+};
 
 export const listSalesOrders = (status?: SalesOrderStatus): Promise<SalesOrder[]> =>
   api

@@ -482,6 +482,36 @@ def test_executive_summary(db_session, admin_user):
     assert summary.top_products and summary.top_products[0].units_sold == 4
 
 
+def test_ai_import_normalize_merge_default_and_match(db_session, admin_user):
+    """AI-extracted items: merge duplicates (sum), default missing qty to 1,
+    and fuzzy-match names to the catalogue. No order is created."""
+    from services.ai_import_service import AiImportService
+    _product(db_session, admin_user.id, name="Wooden Table")
+    _product(db_session, admin_user.id, name="Office Chair")
+    db_session.commit()
+
+    raw = {
+        "customer_name": "ABC Furniture Pvt Ltd",
+        "email": "purchase@abc.test",
+        "address": "123 MG Road, Mumbai",
+        "items": [
+            {"product_name": "Wooden Table", "quantity": 5},
+            {"product_name": "wooden table", "quantity": 3},   # dup → merge to 8
+            {"product_name": "Office Chair"},                  # missing qty → 1
+            {"product_name": "Unknown Widget", "quantity": 2}, # no match
+        ],
+    }
+    result = AiImportService(db_session)._normalize_and_match(raw)
+
+    assert result.customer_name == "ABC Furniture Pvt Ltd"
+    assert result.address == "123 MG Road, Mumbai"
+    by_name = {i.product_name.lower(): i for i in result.items}
+    assert by_name["wooden table"].quantity == 8           # merged 5 + 3
+    assert by_name["wooden table"].matched_product_id is not None
+    assert by_name["office chair"].quantity == 1            # defaulted
+    assert by_name["unknown widget"].matched_product_id is None  # unmatched
+
+
 def test_executive_summary_via_api(db_session, admin_user, client, auth_headers):
     r = client.get("/api/v1/dashboard/executive-summary", headers=auth_headers)
     assert r.status_code == 200, r.text

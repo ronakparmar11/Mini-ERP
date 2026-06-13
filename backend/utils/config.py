@@ -35,6 +35,12 @@ class Settings(BaseSettings):
     RESEND_API_KEY: str = ""
     RESEND_FROM_EMAIL: str = "Mini ERP <onboarding@resend.dev>"
 
+    # --- AI-assisted order import (Groq, OpenAI-compatible API) ---
+    # NOTE: env var is lower-case `groq_api_key` (see .env).
+    groq_api_key: str = ""
+    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_BASE_URL: str = "https://api.groq.com/openai/v1"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

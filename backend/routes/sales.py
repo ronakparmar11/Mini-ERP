@@ -1,18 +1,33 @@
-"""Sales order routes — CRUD + confirm + deliver + cancel."""
-from fastapi import APIRouter, Depends, status
+"""Sales order routes — CRUD + confirm + deliver + cancel + AI PDF import."""
+from fastapi import APIRouter, Depends, File, UploadFile, status
 from sqlalchemy.orm import Session
 
 from database.session import get_db
 from dependencies.auth import get_current_user, require
 from dependencies.permissions import P
 from models.user import User
+from schemas.ai_import import ImportedOrder
 from schemas.sales import (
     ConfirmationResult, DeliveryRequest, SalesOrderCreate, SalesOrderOut,
 )
+from services.ai_import_service import AiImportService
 from services.sales_service import SalesService
 from utils.enums import SalesOrderStatus
 
 router = APIRouter(prefix="/sales-orders", tags=["Sales Orders"])
+
+
+@router.post("/import-pdf", response_model=ImportedOrder,
+             dependencies=[Depends(require(P.SALES_CREATE))])
+async def import_sales_order_pdf(file: UploadFile = File(...),
+                                 db: Session = Depends(get_db)):
+    """AI-extract customer + line items from a PDF for human review.
+
+    Does NOT create anything — the user reviews/edits, then the normal
+    POST /sales-orders flow creates the DRAFT order.
+    """
+    content = await file.read()
+    return AiImportService(db).extract_order_from_pdf(content, filename=file.filename)
 
 
 @router.get("", response_model=list[SalesOrderOut],

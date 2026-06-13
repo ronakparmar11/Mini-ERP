@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Sparkles, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -11,10 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useProducts } from "@/features/products/hooks";
-import { useCreateSalesOrder } from "@/features/sales/hooks";
+import { useCreateSalesOrder, useImportSalesOrderPdf } from "@/features/sales/hooks";
 import { SalesLineEditor, type SalesLineDraft, blankLine } from "@/features/sales/SalesLineEditor";
-import type { SalesOrderCreate } from "@/types/sales";
-import { getApiErrorMessage } from "@/utils/apiError";
+import type { ImportedOrder, SalesOrderCreate } from "@/types/sales";
+import { getFriendlyError } from "@/utils/apiError";
 import { formatCurrency } from "@/utils/format";
 
 const customerSchema = z.object({
@@ -30,6 +30,8 @@ export function CreateSalesOrderDrawer({ open, onClose }: { open: boolean; onClo
   const navigate = useNavigate();
   const { data: products, isLoading: loadingProducts } = useProducts();
   const createMut = useCreateSalesOrder();
+  const importMut = useImportSalesOrderPdf();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [lines, setLines] = useState<SalesLineDraft[]>([blankLine()]);
   const [lineError, setLineError] = useState<string | null>(null);
@@ -50,6 +52,46 @@ export function CreateSalesOrderDrawer({ open, onClose }: { open: boolean; onClo
   }, [open, reset]);
 
   if (!open) return null;
+
+  // Map AI-extracted data into the form for human review. Pre-fills price for
+  // matched products; unmatched items leave the dropdown blank for the user.
+  const applyImported = (data: ImportedOrder) => {
+    reset({
+      customer_name: data.customer_name ?? "",
+      customer_email: data.email ?? "",
+      customer_address: data.address ?? "",
+      salesperson: "",
+    });
+    const byId = new Map((products ?? []).map((p) => [p.id, p]));
+    const drafts: SalesLineDraft[] = data.items.map((it) => {
+      const matched = it.matched_product_id != null ? byId.get(it.matched_product_id) : undefined;
+      return {
+        key: crypto.randomUUID(),
+        product_id: matched ? matched.id : "",
+        ordered_quantity: String(it.quantity || 1),
+        sales_price: matched ? String(matched.sales_price) : "",
+      };
+    });
+    setLines(drafts.length > 0 ? drafts : [blankLine()]);
+    setLineError(null);
+  };
+
+  const onPickFile = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      const data = await importMut.mutateAsync(file);
+      applyImported(data);
+      const unmatched = data.items.filter((i) => i.matched_product_id == null).length;
+      toast.success(
+        `Extracted ${data.items.length} item${data.items.length === 1 ? "" : "s"}. ` +
+          (unmatched ? `${unmatched} need a product — review below.` : "Review and create."),
+      );
+    } catch (err) {
+      toast.error(getFriendlyError(err));
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const estimatedTotal = lines.reduce(
     (sum, l) => sum + (Number(l.ordered_quantity) || 0) * (Number(l.sales_price) || 0),
@@ -82,7 +124,7 @@ export function CreateSalesOrderDrawer({ open, onClose }: { open: boolean; onClo
       onClose();
       navigate(`/sales/${created.id}`);
     } catch (err) {
-      toast.error(getApiErrorMessage(err));
+      toast.error(getFriendlyError(err));
     }
   });
 
@@ -93,6 +135,37 @@ export function CreateSalesOrderDrawer({ open, onClose }: { open: boolean; onClo
           <button onClick={onClose} className="rounded-full p-1 text-on-surface-variant hover:bg-surface-container">
             <X className="h-5 w-5" />
           </button>
+        </div>
+
+        {/* AI-assisted import — pre-fills the form below for review */}
+        <div className="border-b border-outline-variant bg-secondary-container/40 p-4">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/pdf"
+            className="hidden"
+            onChange={(e) => onPickFile(e.target.files?.[0])}
+          />
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="flex items-center gap-1.5 text-body-md font-semibold text-on-surface">
+                <Sparkles className="h-4 w-4 text-primary" />
+                Import from PDF
+              </p>
+              <p className="text-[11px] text-on-surface-variant">
+                AI extracts customer &amp; items — you review before creating.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importMut.isPending}
+            >
+              {importMut.isPending ? "Extracting…" : "Upload PDF"}
+            </Button>
+          </div>
         </div>
 
         <form id="so-form" onSubmit={onSubmit} className="flex-1 space-y-6 overflow-y-auto p-4">

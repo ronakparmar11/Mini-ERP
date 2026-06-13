@@ -18,7 +18,7 @@ router = APIRouter(prefix="/purchase-orders", tags=["Purchase Orders"])
 @router.get("", response_model=list[PurchaseOrderOut],
             dependencies=[Depends(require(P.PURCHASE_VIEW))])
 def list_purchase(status_filter: PurchaseOrderStatus | None = None,
-                  db: Session = Depends(get_db)):
+                  db: Session = Depends(get_db)):      
     return PurchaseService(db).list(status=status_filter)
 
 

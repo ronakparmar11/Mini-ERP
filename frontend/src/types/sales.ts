@@ -53,6 +53,22 @@ export interface DeliveryRequest {
   lines?: DeliveryLineInput[];
 }
 
+/** One AI-extracted order line (for the review screen). */
+export interface ImportedItem {
+  product_name: string;
+  quantity: number;
+  matched_product_id: number | null;
+  matched_product_name: string | null;
+}
+
+/** Response of POST /sales-orders/import-pdf (extraction only — nothing created). */
+export interface ImportedOrder {
+  customer_name: string | null;
+  email: string | null;
+  address: string | null;
+  items: ImportedItem[];
+}
+
 /** Response of POST /sales-orders/{id}/confirm. */
 export interface ConfirmationResult {
   sales_order: SalesOrder;

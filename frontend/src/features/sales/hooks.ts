@@ -6,11 +6,16 @@ import {
   createSalesOrder,
   deliverSalesOrder,
   getSalesOrder,
+  importSalesOrderPdf,
   listSalesOrders,
 } from "@/api/sales";
 import type { DeliveryRequest, SalesOrderCreate, SalesOrderStatus } from "@/types/sales";
 
 const SALES_KEY = "sales-orders";
+
+/** AI-assisted PDF import (extraction only — no order is created). */
+export const useImportSalesOrderPdf = () =>
+  useMutation({ mutationFn: (file: File) => importSalesOrderPdf(file) });
 
 export const useSalesOrders = (status?: SalesOrderStatus) =>
   useQuery({
