@@ -1,0 +1,43 @@
+"""Application configuration loaded from environment variables.
+
+Uses pydantic-settings so config is validated at startup and typed everywhere.
+Keep ALL tunables here so deployment is a matter of changing env vars only.
+"""
+from functools import lru_cache
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    # --- Application ---
+    APP_NAME: str = "Mini ERP"
+    DEBUG: bool = True
+    API_V1_PREFIX: str = "/api/v1"
+
+    # --- Database ---
+    # Example: postgresql+psycopg2://erp:erp@localhost:5432/mini_erp
+    DATABASE_URL: str = "postgresql+psycopg2://erp:erp@localhost:5432/mini_erp"
+
+    # --- JWT / Security ---
+    JWT_SECRET_KEY: str = "CHANGE_ME_IN_PROD_super_secret_key"
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 8  # 8h dev token, shorten in prod
+
+    # --- Business rules (tunable defaults) ---
+    LOW_STOCK_THRESHOLD: float = 5.0  # used by dashboard "low stock" report
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+        extra="ignore",
+    )
+
+
+@lru_cache
+def get_settings() -> Settings:
+    """Cached singleton so we don't re-parse the environment on every import."""
+    return Settings()
+
+
+settings = get_settings()
