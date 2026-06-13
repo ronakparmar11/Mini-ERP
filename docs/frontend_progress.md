@@ -13,7 +13,7 @@ TanStack Query · Axios · React Hook Form · Zod · Lucide · Recharts · Sonne
 | 2 | Dashboard · Products | ✅ Complete (build green) |
 | 3 | Sales Orders | ✅ Complete (build green) |
 | 4 | Manufacturing (Kanban + detail) · BoMs | ✅ Complete (build green) |
-| 5 | Inventory · Audit | ⏳ Pending approval |
+| 5 | Inventory · Audit · Purchase Orders | ✅ Complete (build green) |
 
 ## Phase 1 — Completed
 
@@ -199,6 +199,57 @@ existing table+drawer enterprise pattern (Products/Sales).
   (aligns the sidebar with the Phase 4 route spec).
 * `routes/AppRoutes.tsx`: replaced `/boms`, `/manufacturing` placeholders with real
   pages; added `/manufacturing/:id`.
+
+## Phase 5 — Completed
+
+**Inventory Ledger** — `features/inventory/` (route `/inventory`, Screen 8)
+* `InventoryPage` — `DataTable` (Timestamp, Product, Movement Type, Reference,
+  Ref ID, signed Quantity). Filters: movement type + reference type; debounced
+  product-name search (client-side over the fetched ledger). Loading/error/empty.
+* `components/common/MovementBadge` — reusable, built on `Badge` + existing
+  `utils/movements` (MOVEMENT_META). Quantity coloured by in/out/neutral direction.
+
+**Audit Logs** — `features/audit/` (route `/audit-logs`, Screen 7)
+* `AuditLogsPage` — read-only `DataTable` (Timestamp, User, Module, Action,
+  Entity). Server-side module filter; client search over field/value/entity.
+* Row → `Modal` detail showing old → new value diff. Module badges via `Badge`.
+
+**Purchase Orders** — `features/purchase/` (routes `/purchase-orders`, `/:id`)
+* `PurchaseOrdersPage` — status filter chips + `DataTable` (PO, Vendor (+source SO),
+  Date, Status, Total).
+* `CreatePurchaseOrderDrawer` — vendor + responsible person + line editor
+  (product picker auto-fills cost), est. total, Zod/validation.
+* `PurchaseOrderDetailPage` — header + `StatusBadge`, info grid, lines table
+  (Ordered / Received / Remaining / Cost / Subtotal), status-driven actions:
+  DRAFT → Confirm + Cancel; CONFIRMED/PARTIALLY_RECEIVED → Receive + Cancel;
+  RECEIVED/CANCELLED → read-only.
+* `ReceiveDialog` (`Modal`) — per-line partial receipts defaulting to remaining,
+  plus "Receive all remaining"; client guards, backend errors surfaced via toast.
+* `PURCHASE_STATUS_META` extends the StatusBadge pattern.
+* Receive invalidates **purchase-orders + products + inventory + dashboard**.
+
+**Reuse / no duplication:** `DataTable`, `Modal`, `StatusBadge`, `Badge`,
+`SectionCard`, `StateViews`, `PageHeader`, `useDebouncedValue`, `utils/movements`,
+`utils/format`, `useProducts`.
+
+## Backend endpoints integrated (Phase 5)
+* `GET /inventory/movements`
+* `GET /audit-logs` (+ `?module=`)
+* `GET /purchase-orders` (+ `?status_filter=`) · `GET /purchase-orders/{id}` ·
+  `POST /purchase-orders` · `/{id}/confirm` · `/{id}/receive` · `/{id}/cancel`
+
+## Integration changes to earlier phases
+* `components/layout/navItems.ts`: `/purchase`→`/purchase-orders`, `/audit`→`/audit-logs`.
+* `routes/AppRoutes.tsx`: all remaining placeholders replaced with real pages;
+  dropped the now-unused `PlaceholderPage` import.
+* `features/sales/ConfirmationResultDialog.tsx`: PO chip now links to
+  `/purchase-orders`.
+
+## Phase 5 known limitations
+* Inventory/Audit search & filters operate client-side on a capped fetch
+  (movements 500, audit 300) since the backend list endpoints don't paginate.
+* Audit "User"/movement "User" shown as `User #id` (no user-name lookup endpoint).
+* `pages/PlaceholderPage.tsx` is now unreferenced (kept for future scaffolding).
 
 ## Known notes / deferred
 * Global search, notifications, Settings/Support, Forgot password, New Record are

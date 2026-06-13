@@ -58,7 +58,7 @@ export function ConfirmationResultDialog({
               {poIds.map((id) => (
                 <button
                   key={`po-${id}`}
-                  onClick={() => navigate("/purchase")}
+                  onClick={() => navigate("/purchase-orders")}
                   className="inline-flex items-center gap-1.5 rounded-full border border-tertiary-fixed-dim bg-[#f0fdf4] px-3 py-1 text-body-sm font-semibold text-tertiary-container hover:underline"
                 >
                   <ShoppingCart className="h-3.5 w-3.5" />

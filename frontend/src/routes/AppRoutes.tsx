@@ -2,21 +2,19 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
+import { AuditLogsPage } from "@/features/audit/AuditLogsPage";
 import { BomPage } from "@/features/bom/BomPage";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
+import { InventoryPage } from "@/features/inventory/InventoryPage";
 import { ManufacturingDetailPage } from "@/features/manufacturing/ManufacturingDetailPage";
 import { ManufacturingPage } from "@/features/manufacturing/ManufacturingPage";
 import { ProductsPage } from "@/features/products/ProductsPage";
+import { PurchaseOrderDetailPage } from "@/features/purchase/PurchaseOrderDetailPage";
+import { PurchaseOrdersPage } from "@/features/purchase/PurchaseOrdersPage";
 import { SalesOrderDetailPage } from "@/features/sales/SalesOrderDetailPage";
 import { SalesOrdersPage } from "@/features/sales/SalesOrdersPage";
 import { LoginPage } from "@/pages/LoginPage";
-import { PlaceholderPage } from "@/pages/PlaceholderPage";
 
-/**
- * Route map. Real module pages replace the placeholders phase-by-phase:
- *   Phase 2 → dashboard, products   Phase 3 → sales
- *   Phase 4 → manufacturing/boms    Phase 5 → inventory, audit
- */
 export function AppRoutes() {
   return (
     <Routes>
@@ -29,30 +27,13 @@ export function AppRoutes() {
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/sales" element={<SalesOrdersPage />} />
           <Route path="/sales/:id" element={<SalesOrderDetailPage />} />
-          <Route
-            path="/purchase"
-            element={
-              <PlaceholderPage title="Purchase Orders" subtitle="Procurement and goods receipt." />
-            }
-          />
+          <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
+          <Route path="/purchase-orders/:id" element={<PurchaseOrderDetailPage />} />
           <Route path="/bom" element={<BomPage />} />
           <Route path="/manufacturing" element={<ManufacturingPage />} />
           <Route path="/manufacturing/:id" element={<ManufacturingDetailPage />} />
-          <Route
-            path="/inventory"
-            element={
-              <PlaceholderPage
-                title="Inventory"
-                subtitle="Track serial numbers and lots across all supply chain nodes."
-              />
-            }
-          />
-          <Route
-            path="/audit"
-            element={
-              <PlaceholderPage title="Audit Logs" subtitle="Review system activity and historical changes." />
-            }
-          />
+          <Route path="/inventory" element={<InventoryPage />} />
+          <Route path="/audit-logs" element={<AuditLogsPage />} />
         </Route>
       </Route>
 
