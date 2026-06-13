@@ -12,8 +12,8 @@ TanStack Query · Axios · React Hook Form · Zod · Lucide · Recharts · Sonne
 | 1 | Setup · Routing · Layout · Authentication | ✅ Complete (build green) |
 | 2 | Dashboard · Products | ✅ Complete (build green) |
 | 3 | Sales Orders | ✅ Complete (build green) |
-| 4 | Manufacturing (Kanban + detail) · BoMs | ⏳ Pending approval |
-| 5 | Inventory · Audit | ⏳ |
+| 4 | Manufacturing (Kanban + detail) · BoMs | ✅ Complete (build green) |
+| 5 | Inventory · Audit | ⏳ Pending approval |
 
 ## Phase 1 — Completed
 
@@ -152,6 +152,53 @@ TanStack Query · Axios · React Hook Form · Zod · Lucide · Recharts · Sonne
 * `POST /sales-orders/{id}/confirm`
 * `POST /sales-orders/{id}/deliver`
 * `POST /sales-orders/{id}/cancel`
+
+## Phase 4 — Completed
+
+**Design sources:** Screen 5 (Manufacturing Kanban), Screen 6 (MO detail); the
+shared `*.md` design-system spec. BoM has no Stitch screen → composed from the
+existing table+drawer enterprise pattern (Products/Sales).
+
+**Bills of Materials** — `features/bom/` (route `/bom`)
+* `BomPage` — `DataTable` (ID, Finished Product, Quantity, Components #, Operations #, View).
+* `CreateBomDrawer` — RHF+Zod finished product + quantity; dynamic **Components**
+  and **Operations** editors (add/remove rows); validation: ≥1 component, qty > 0.
+* `BomDetailDrawer` — read-only components/operations + delete (handles backend errors).
+
+**Manufacturing Orders** — `features/manufacturing/` (routes `/manufacturing`, `/manufacturing/:id`)
+* `ManufacturingPage` + `KanbanBoard` — grouped columns DRAFT / CONFIRMED /
+  IN_PROGRESS / DONE / CANCELLED, per-column counts, In-Progress column emphasized;
+  loading / error / empty states per board + per column.
+* `ManufacturingCard` — MO ref, finished product, qty, schedule date, assignee
+  initials, source-SO chip, status-accent left border. Click → detail.
+* `CreateMODrawer` — pick BoM + quantity + assignee + schedule date.
+* `ManufacturingDetailPage` — header + status badge, info grid (Qty, BoM, Assignee,
+  Schedule, Source), **BoM Consumed** table (Required / Consumed / status badge via
+  `componentConsumptionStatus`), `OperationsTimeline` (Expected / Actual, done/active/
+  pending nodes).
+* **Workflow actions** are status-driven: DRAFT → Confirm + Cancel; CONFIRMED →
+  Start Production + Cancel; IN_PROGRESS → Produce; DONE/CANCELLED → read-only.
+* `ProduceDialog` — lists components to consume + per-operation actual-duration
+  inputs (default = expected); submit calls produce. Produce invalidates
+  **manufacturing + products + dashboard** so stock/KPIs update.
+* All backend business-rule errors (e.g. insufficient stock on produce, illegal
+  transition) surfaced via toast, never suppressed.
+
+**Reuse / no duplication**
+* Reused `DataTable`, `Modal`, `SectionCard`, `StateViews`, `StatusBadge`,
+  `PageHeader`, `Button`, `Input`, `Label`, `formatters`.
+* Extended the StatusBadge pattern with `MANUFACTURING_STATUS_META`.
+
+## Backend endpoints integrated (Phase 4)
+* `GET /boms` · `POST /boms` · `DELETE /boms/{id}`
+* `GET /manufacturing-orders` · `POST /manufacturing-orders` · `GET /manufacturing-orders/{id}`
+* `POST /manufacturing-orders/{id}/confirm` · `/start` · `/produce` · `/cancel`
+
+## Integration changes to earlier phases
+* `components/layout/navItems.ts`: "Bills of Materials" route `/boms` → `/bom`
+  (aligns the sidebar with the Phase 4 route spec).
+* `routes/AppRoutes.tsx`: replaced `/boms`, `/manufacturing` placeholders with real
+  pages; added `/manufacturing/:id`.
 
 ## Known notes / deferred
 * Global search, notifications, Settings/Support, Forgot password, New Record are

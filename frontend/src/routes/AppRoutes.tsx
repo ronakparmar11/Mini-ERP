@@ -2,7 +2,10 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
+import { BomPage } from "@/features/bom/BomPage";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
+import { ManufacturingDetailPage } from "@/features/manufacturing/ManufacturingDetailPage";
+import { ManufacturingPage } from "@/features/manufacturing/ManufacturingPage";
 import { ProductsPage } from "@/features/products/ProductsPage";
 import { SalesOrderDetailPage } from "@/features/sales/SalesOrderDetailPage";
 import { SalesOrdersPage } from "@/features/sales/SalesOrdersPage";
@@ -32,21 +35,9 @@ export function AppRoutes() {
               <PlaceholderPage title="Purchase Orders" subtitle="Procurement and goods receipt." />
             }
           />
-          <Route
-            path="/boms"
-            element={
-              <PlaceholderPage title="Bills of Materials" subtitle="Define how products are built." />
-            }
-          />
-          <Route
-            path="/manufacturing"
-            element={
-              <PlaceholderPage
-                title="Manufacturing Orders"
-                subtitle="Manage production flow and work center capacity."
-              />
-            }
-          />
+          <Route path="/bom" element={<BomPage />} />
+          <Route path="/manufacturing" element={<ManufacturingPage />} />
+          <Route path="/manufacturing/:id" element={<ManufacturingDetailPage />} />
           <Route
             path="/inventory"
             element={
