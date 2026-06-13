@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { InlineAlert } from "@/components/common/InlineAlert";
 import { Modal } from "@/components/common/Modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useReceivePurchaseOrder } from "@/features/purchase/hooks";
 import type { PurchaseOrder } from "@/types/purchase";
-import { getApiErrorMessage } from "@/utils/apiError";
+import { getFriendlyError } from "@/utils/apiError";
 import { formatNumber } from "@/utils/format";
 
 interface ReceiveDialogProps {
@@ -20,12 +21,14 @@ export function ReceiveDialog({ open, onClose, order, productName }: ReceiveDial
   const receiveMut = useReceivePurchaseOrder(order.id);
   const pending = order.lines.filter((l) => l.remaining_to_receive > 0);
   const [qty, setQty] = useState<Record<number, string>>({});
+  const [alert, setAlert] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
       const seed: Record<number, string> = {};
       pending.forEach((l) => (seed[l.id] = String(l.remaining_to_receive)));
       setQty(seed);
+      setAlert(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, order.id]);
@@ -52,7 +55,9 @@ export function ReceiveDialog({ open, onClose, order, productName }: ReceiveDial
       toast.success("Receipt recorded");
       onClose();
     } catch (err) {
-      toast.error(getApiErrorMessage(err));
+      const msg = getFriendlyError(err);
+      setAlert(msg);
+      toast.error(msg);
     }
   };
 
@@ -74,6 +79,7 @@ export function ReceiveDialog({ open, onClose, order, productName }: ReceiveDial
         </>
       }
     >
+      {alert && <InlineAlert message={alert} className="mb-3" />}
       {pending.length === 0 ? (
         <p className="text-body-sm text-on-surface-variant">Nothing left to receive on this order.</p>
       ) : (

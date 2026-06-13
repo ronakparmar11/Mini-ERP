@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { InlineAlert } from "@/components/common/InlineAlert";
 import { Modal } from "@/components/common/Modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useProduceMO } from "@/features/manufacturing/hooks";
 import type { ManufacturingOrder } from "@/types/manufacturing";
-import { getApiErrorMessage } from "@/utils/apiError";
+import { getFriendlyError } from "@/utils/apiError";
 import { formatNumber } from "@/utils/format";
 
 interface ProduceDialogProps {
@@ -23,6 +24,7 @@ interface ProduceDialogProps {
 export function ProduceDialog({ open, onClose, order, productName }: ProduceDialogProps) {
   const produceMut = useProduceMO(order.id);
   const [actuals, setActuals] = useState<Record<number, string>>({});
+  const [alert, setAlert] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -31,6 +33,7 @@ export function ProduceDialog({ open, onClose, order, productName }: ProduceDial
         seed[o.id] = String(o.actual_duration ?? o.expected_duration);
       });
       setActuals(seed);
+      setAlert(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, order.id]);
@@ -45,7 +48,9 @@ export function ProduceDialog({ open, onClose, order, productName }: ProduceDial
       toast.success(`Produced ${formatNumber(order.quantity_to_produce)} × ${productName(order.finished_product_id)}`);
       onClose();
     } catch (err) {
-      toast.error(getApiErrorMessage(err));
+      const msg = getFriendlyError(err);
+      setAlert(msg);
+      toast.error(msg);
     }
   };
 
@@ -67,6 +72,7 @@ export function ProduceDialog({ open, onClose, order, productName }: ProduceDial
       }
     >
       <div className="space-y-5">
+        {alert && <InlineAlert message={alert} />}
         <div className="rounded-lg border border-outline-variant bg-surface-container-low p-3 text-body-sm text-on-surface">
           Producing <span className="font-semibold">{formatNumber(order.quantity_to_produce)}</span> ×{" "}
           <span className="font-semibold">{productName(order.finished_product_id)}</span> will consume the

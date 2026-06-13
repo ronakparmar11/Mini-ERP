@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { InlineAlert } from "@/components/common/InlineAlert";
 import { Modal } from "@/components/common/Modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDeliverSalesOrder } from "@/features/sales/hooks";
 import type { SalesOrder } from "@/types/sales";
-import { getApiErrorMessage } from "@/utils/apiError";
+import { getFriendlyError } from "@/utils/apiError";
 import { formatNumber } from "@/utils/format";
 
 interface DeliverDialogProps {
@@ -21,12 +22,14 @@ export function DeliverDialog({ open, onClose, order, productName }: DeliverDial
   const deliverMut = useDeliverSalesOrder(order.id);
   const deliverableLines = order.lines.filter((l) => l.remaining_to_deliver > 0);
   const [qty, setQty] = useState<Record<number, string>>({});
+  const [alert, setAlert] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
       const seed: Record<number, string> = {};
       deliverableLines.forEach((l) => (seed[l.id] = String(l.remaining_to_deliver)));
       setQty(seed);
+      setAlert(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, order.id]);
@@ -58,7 +61,9 @@ export function DeliverDialog({ open, onClose, order, productName }: DeliverDial
       toast.success("Delivery recorded");
       onClose();
     } catch (err) {
-      toast.error(getApiErrorMessage(err));
+      const msg = getFriendlyError(err);
+      setAlert(msg);
+      toast.error(msg);
     }
   };
 
@@ -87,6 +92,7 @@ export function DeliverDialog({ open, onClose, order, productName }: DeliverDial
         </>
       }
     >
+      {alert && <InlineAlert message={alert} className="mb-3" />}
       {deliverableLines.length === 0 ? (
         <p className="text-body-sm text-on-surface-variant">Nothing left to deliver on this order.</p>
       ) : (

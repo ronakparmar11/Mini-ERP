@@ -1,5 +1,6 @@
 import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { MovementBadge } from "@/components/common/MovementBadge";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -9,8 +10,8 @@ import { useMovements } from "@/features/inventory/hooks";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import type { InventoryMovement, MovementType, ReferenceType } from "@/types/inventory";
 import { cn } from "@/utils/cn";
-import { formatDateTime } from "@/utils/format";
-import { MOVEMENT_META, referenceLabel, signedQuantity } from "@/utils/movements";
+import { formatDateTime, formatNumber } from "@/utils/format";
+import { MOVEMENT_META, referenceLabel, referencePath, signedQuantity } from "@/utils/movements";
 
 const MOVEMENT_TYPES: MovementType[] = [
   "SALE_RESERVATION",
@@ -54,23 +55,28 @@ export function InventoryPage() {
       cell: (m) => <span className="text-on-surface-variant">{formatDateTime(m.timestamp)}</span>,
     },
     {
-      id: "product",
-      header: "Product",
-      cell: (m) => <span className="font-medium text-on-surface">{productName(m.product_id)}</span>,
-    },
-    { id: "movement", header: "Movement Type", cell: (m) => <MovementBadge type={m.movement_type} /> },
-    {
-      id: "reference",
-      header: "Reference",
-      cell: (m) => (
-        <span className="font-medium text-primary">{referenceLabel(m.reference_type, m.reference_id)}</span>
-      ),
-    },
-    {
-      id: "refId",
-      header: "Ref ID",
-      align: "right",
-      cell: (m) => <span className="text-on-surface-variant">#{m.reference_id}</span>,
+      id: "activity",
+      header: "Activity",
+      cell: (m) => {
+        const meta = MOVEMENT_META[m.movement_type];
+        const qty = Math.abs(Number(m.quantity));
+        return (
+          <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-on-surface">
+            <MovementBadge type={m.movement_type} />
+            <span>
+              {meta.verb}{" "}
+              <span className="font-semibold">{formatNumber(qty)}</span>{" "}
+              <span className="font-medium">{productName(m.product_id)}</span> units {meta.preposition}{" "}
+              <Link
+                to={referencePath(m.reference_type, m.reference_id)}
+                className="font-semibold text-primary hover:underline"
+              >
+                {referenceLabel(m.reference_type, m.reference_id)}
+              </Link>
+            </span>
+          </span>
+        );
+      },
     },
     {
       id: "quantity",

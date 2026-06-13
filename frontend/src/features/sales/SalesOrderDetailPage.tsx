@@ -4,13 +4,16 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { Modal } from "@/components/common/Modal";
-import { SectionCard } from "@/components/common/SectionCard";
 import { ErrorState, LoadingState } from "@/components/common/StateViews";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
+import { useManufacturingOrders } from "@/features/manufacturing/hooks";
 import { useProducts } from "@/features/products/hooks";
+import { usePurchaseOrders } from "@/features/purchase/hooks";
+import { ConfirmationBanner } from "@/features/sales/ConfirmationBanner";
 import { ConfirmationResultDialog } from "@/features/sales/ConfirmationResultDialog";
 import { DeliverDialog } from "@/features/sales/DeliverDialog";
+import { FulfillmentPanel } from "@/features/sales/FulfillmentPanel";
 import { OrderLifecycle } from "@/features/sales/OrderLifecycle";
 import {
   useCancelSalesOrder,
@@ -29,14 +32,27 @@ export function SalesOrderDetailPage() {
 
   const { data: order, isLoading, error, refetch } = useSalesOrder(id);
   const { data: products } = useProducts();
+  const { data: allMos } = useManufacturingOrders();
+  const { data: allPos } = usePurchaseOrders();
 
   const confirmMut = useConfirmSalesOrder(id);
   const cancelMut = useCancelSalesOrder(id);
 
   const [confirmResult, setConfirmResult] = useState<ConfirmationResult | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
   const [showDeliver, setShowDeliver] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
+
+  // Orders auto-generated for (or otherwise linked to) this sales order.
+  const linkedMos = useMemo(
+    () => (allMos ?? []).filter((m) => m.source_sales_order_id === id && m.status !== "CANCELLED"),
+    [allMos, id],
+  );
+  const linkedPos = useMemo(
+    () => (allPos ?? []).filter((p) => p.source_sales_order_id === id && p.status !== "CANCELLED"),
+    [allPos, id],
+  );
 
   const productName = useMemo(() => {
     const map = new Map((products ?? []).map((p) => [p.id, p.name]));
@@ -61,6 +77,7 @@ export function SalesOrderDetailPage() {
       const res = await confirmMut.mutateAsync();
       setConfirmResult(res);
       setShowResult(true);
+      setBannerDismissed(false);
     } catch (err) {
       toast.error(getApiErrorMessage(err));
     }
@@ -106,6 +123,11 @@ export function SalesOrderDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Persistent confirmation outcome (survives closing the result dialog) */}
+      {confirmResult && !bannerDismissed && (
+        <ConfirmationBanner result={confirmResult} onDismiss={() => setBannerDismissed(true)} />
+      )}
 
       {/* Document card */}
       <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface shadow-sm">
@@ -208,14 +230,17 @@ export function SalesOrderDetailPage() {
         </div>
       </div>
 
-      {/* Notes / traceability */}
-      <SectionCard title="Traceability & Fulfillment">
-        <p className="p-4 text-body-sm text-on-surface-variant">
-          Confirming this order reserves available stock and—when a product is set to procure on
-          demand—automatically raises Purchase or Manufacturing orders for any shortage. All resulting
-          stock movements are recorded in the inventory ledger.
-        </p>
-      </SectionCard>
+      {/* Fulfillment & next steps */}
+      <FulfillmentPanel
+        order={order}
+        linkedPurchaseOrders={linkedPos}
+        linkedManufacturingOrders={linkedMos}
+        canConfirm={canConfirm}
+        canDeliver={canDeliver}
+        confirmPending={confirmMut.isPending}
+        onConfirm={onConfirm}
+        onDeliver={() => setShowDeliver(true)}
+      />
 
       {/* Dialogs */}
       <ConfirmationResultDialog open={showResult} onClose={() => setShowResult(false)} result={confirmResult} />

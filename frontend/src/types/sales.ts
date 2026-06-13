@@ -10,6 +10,7 @@ export interface SalesOrderLine {
   product_id: number;
   ordered_quantity: number;
   delivered_quantity: number;
+  reserved_quantity: number;
   sales_price: number;
   total: number;
   remaining_to_deliver: number;

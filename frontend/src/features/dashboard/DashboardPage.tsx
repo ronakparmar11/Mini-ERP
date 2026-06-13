@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { KpiCard } from "@/components/common/KpiCard";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
+import { ActionCenter } from "@/features/dashboard/ActionCenter";
 import { InventoryValueChart } from "@/features/dashboard/InventoryValueChart";
 import { LowStockPanel } from "@/features/dashboard/LowStockPanel";
 import { ManufacturingChart } from "@/features/dashboard/ManufacturingChart";
@@ -52,6 +53,12 @@ export function DashboardPage() {
           </>
         }
       />
+
+      {/* Action Center — priorities first */}
+      <section className="space-y-3">
+        <h2 className="text-label-upper uppercase text-on-surface-variant">Action Center</h2>
+        <ActionCenter />
+      </section>
 
       {/* KPI grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
