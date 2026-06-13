@@ -47,6 +47,12 @@ class SalesOrderLine(Base):
 
     ordered_quantity: Mapped[float] = mapped_column(Numeric(14, 3), nullable=False)
     delivered_quantity: Mapped[float] = mapped_column(Numeric(14, 3), default=0, nullable=False)
+    # Quantity of this line currently committed (reserved) in stock. Tracked per
+    # line so newly produced/received supply can be re-allocated to the exact
+    # outstanding demand without double-reserving.
+    reserved_quantity: Mapped[float] = mapped_column(
+        Numeric(14, 3), default=0, server_default="0", nullable=False
+    )
     sales_price: Mapped[float] = mapped_column(Numeric(14, 2), nullable=False)
 
     order: Mapped["SalesOrder"] = relationship(back_populates="lines")
@@ -59,3 +65,10 @@ class SalesOrderLine(Base):
     @property
     def remaining_to_deliver(self) -> float:
         return float(self.ordered_quantity) - float(self.delivered_quantity)
+
+    @property
+    def remaining_to_reserve(self) -> float:
+        """Demand still neither delivered nor reserved (drives re-allocation)."""
+        return (float(self.ordered_quantity)
+                - float(self.delivered_quantity)
+                - float(self.reserved_quantity))

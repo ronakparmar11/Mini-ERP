@@ -16,8 +16,8 @@ from schemas.purchase import PurchaseOrderCreate, PurchaseOrderLineCreate, Recei
 from schemas.bom import BoMCreate, BoMComponentCreate, BoMOperationCreate
 from schemas.manufacturing import ManufacturingOrderCreate, ProduceRequest
 from utils.enums import (
-    ProcurementMethod, PurchaseOrderStatus, SalesOrderStatus,
-    ManufacturingOrderStatus,
+    MovementType, ProcurementMethod, PurchaseOrderStatus, ReferenceType,
+    SalesOrderStatus, ManufacturingOrderStatus,
 )
 from utils.exceptions import InsufficientStockError, BusinessRuleError
 import pytest
@@ -214,3 +214,80 @@ def test_audit_log_on_product_update(db_session, admin_user):
 # --- 11. RBAC: unauthenticated request rejected --------------------------------
 def test_products_require_auth(client):
     assert client.get("/api/v1/products").status_code == 401
+
+
+# --- 12. Produced stock is re-allocated to the waiting Sales Order --------------
+def test_mo_production_reallocates_stock_to_waiting_so(db_session, admin_user):
+    """Stock=12, SO=13, auto-MO for 1; producing the MO must reserve the new
+    unit back to the SO so the full 13 can be delivered."""
+    uid = admin_user.id
+    wood = _product(db_session, uid, name="Wood", on_hand_qty=100)
+    bed = _product(db_session, uid, name="Bed", on_hand_qty=12,
+                   procure_on_demand=True,
+                   procurement_method=ProcurementMethod.MANUFACTURE)
+    BoMService(db_session).create(
+        BoMCreate(finished_product_id=bed.id, quantity=1,
+                  components=[BoMComponentCreate(component_product_id=wood.id,
+                                                 quantity_required=2)]),
+        user_id=uid)
+
+    so = SalesService(db_session).create(
+        SalesOrderCreate(customer_name="Bob",
+                         lines=[SalesOrderLineCreate(product_id=bed.id, ordered_quantity=13)]),
+        user_id=uid)
+    result = SalesService(db_session).confirm(so.id, user_id=uid)
+
+    db_session.refresh(bed)
+    assert bed.reserved_qty == 12  # only available stock reserved at confirm
+    assert len(result.generated_manufacturing_order_ids) == 1
+    mo_id = result.generated_manufacturing_order_ids[0]
+
+    # Drive the auto-created MO through to production.
+    ManufacturingService(db_session).confirm(mo_id, user_id=uid)
+    ManufacturingService(db_session).start(mo_id, user_id=uid)
+    ManufacturingService(db_session).produce(mo_id, ProduceRequest(), user_id=uid)
+
+    db_session.refresh(bed)
+    # Newly produced unit was reserved back to the waiting SO.
+    assert bed.on_hand_qty == 13
+    assert bed.reserved_qty == 13
+
+    # Ledger contains both the production and the re-allocation reservation.
+    types = [m.movement_type
+             for m in InventoryService(db_session).list_movements(product_id=bed.id)]
+    assert MovementType.MO_PRODUCTION in types
+    assert MovementType.SALE_RESERVATION in types
+
+    # Full delivery of 13 now succeeds.
+    so = SalesService(db_session).deliver(so.id, DeliveryRequest(), user_id=uid)
+    assert so.status == SalesOrderStatus.DELIVERED
+
+    db_session.refresh(bed)
+    assert bed.reserved_qty == 0
+    assert bed.on_hand_qty == 0
+
+
+# --- 13. Re-allocation never double-reserves (idempotent on second supply) ------
+def test_reallocation_does_not_double_reserve(db_session, admin_user):
+    uid = admin_user.id
+    bed = _product(db_session, uid, name="Bed", on_hand_qty=12)
+    so = SalesService(db_session).create(
+        SalesOrderCreate(customer_name="Bob",
+                         lines=[SalesOrderLineCreate(product_id=bed.id, ordered_quantity=13)]),
+        user_id=uid)
+    SalesService(db_session).confirm(so.id, user_id=uid)
+
+    # Simulate two separate supply events of 1 unit each (e.g. two receipts).
+    InventoryService(db_session).apply_movement(
+        product_id=bed.id, movement_type=MovementType.PURCHASE_RECEIPT,
+        quantity=1, reference_type=ReferenceType.PURCHASE_ORDER,
+        reference_id=1, user_id=uid, on_hand_delta=+1)
+    first = SalesService(db_session).reallocate_for_product(bed.id, uid)
+    second = SalesService(db_session).reallocate_for_product(bed.id, uid)
+    db_session.commit()
+
+    db_session.refresh(bed)
+    assert first == 1.0       # the one outstanding unit gets reserved
+    assert second == 0.0      # nothing left to reserve -> no double reservation
+    assert bed.reserved_qty == 13
+    assert bed.free_to_use_qty == 0

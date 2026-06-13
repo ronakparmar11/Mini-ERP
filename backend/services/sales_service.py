@@ -110,6 +110,9 @@ class SalesService:
                         product_id=product.id, qty=reservable,
                         so_id=so.id, user_id=user_id,
                     )
+                    # Track the reservation on the line so later supply can fill
+                    # only the still-outstanding remainder (no double-reserving).
+                    line.reserved_quantity = float(line.reserved_quantity) + reservable
                     messages.append(
                         f"Reserved {reservable} of '{product.name}'."
                     )
@@ -201,6 +204,72 @@ class SalesService:
         )
         return mo.id
 
+    # ---- supply re-allocation (called after MO completion / goods receipt) ----
+    def reallocate_for_product(self, product_id: int, user_id: int | None) -> float:
+        """Reserve newly available free stock of a product against waiting demand.
+
+        Invoked after a supply event (e.g. a Manufacturing Order is produced) so
+        that freshly created stock is committed back to the Sales Orders that
+        were short at confirmation time, instead of lingering as free stock.
+
+        Rules:
+          * Only CONFIRMED / PARTIALLY_DELIVERED orders are eligible.
+          * Allocate to the oldest eligible orders first (FIFO).
+          * Per line, fill only `remaining_to_reserve` = ordered − delivered −
+            reserved, so an already-reserved quantity is never reserved twice.
+          * Never reserve more than the free-to-use stock on hand.
+
+        Must run inside an existing transaction (the caller's unit_of_work);
+        each reservation writes a SALE_RESERVATION inventory movement.
+        Returns the total quantity newly reserved.
+        """
+        product = self.db.get(Product, product_id)
+        if product is None:
+            return 0.0
+
+        available = product.free_to_use_qty  # on_hand − reserved (incl. new units)
+        if available <= 1e-9:
+            return 0.0
+
+        eligible_lines = (
+            self.db.query(SalesOrderLine)
+            .join(SalesOrder, SalesOrderLine.order_id == SalesOrder.id)
+            .filter(
+                SalesOrderLine.product_id == product_id,
+                SalesOrder.status.in_([
+                    SalesOrderStatus.CONFIRMED,
+                    SalesOrderStatus.PARTIALLY_DELIVERED,
+                ]),
+            )
+            .order_by(  # FIFO: oldest orders first
+                SalesOrder.creation_date.asc(),
+                SalesOrder.id.asc(),
+                SalesOrderLine.id.asc(),
+            )
+            .all()
+        )
+
+        total_allocated = 0.0
+        for line in eligible_lines:
+            if available <= 1e-9:
+                break
+            needed = line.remaining_to_reserve
+            if needed <= 1e-9:
+                continue
+            alloc = min(needed, available)
+            if alloc <= 1e-9:
+                continue
+            # reserved += alloc and record the SALE_RESERVATION movement.
+            self.inventory.reserve_for_sale(
+                product_id=product_id, qty=alloc,
+                so_id=line.order_id, user_id=user_id,
+            )
+            line.reserved_quantity = float(line.reserved_quantity) + alloc
+            available -= alloc
+            total_allocated += alloc
+
+        return total_allocated
+
     # ---- delivery (reduce reserved + on_hand) ----
     def deliver(self, so_id: int, req: DeliveryRequest, user_id: int) -> SalesOrder:
         so = self.get(so_id)
@@ -241,6 +310,8 @@ class SalesService:
                     so_id=so.id, user_id=user_id,
                 )
                 line.delivered_quantity = float(line.delivered_quantity) + qty
+                # The delivered quantity consumes its reservation.
+                line.reserved_quantity = max(0.0, float(line.reserved_quantity) - qty)
 
             fully = all(l.remaining_to_deliver <= 1e-9 for l in so.lines)
             so.status = (SalesOrderStatus.DELIVERED if fully
@@ -255,23 +326,25 @@ class SalesService:
             raise BusinessRuleError(f"Cannot cancel a {so.status} sales order")
         before = {"status": so.status}
         with unit_of_work(self.db):
-            # Release any outstanding reservations back to free-to-use stock.
+            # Release any outstanding reservations back to free-to-use stock,
+            # based on the quantity this order actually holds reserved.
             for line in so.lines:
-                still_reserved = float(line.ordered_quantity) - float(line.delivered_quantity)
-                if so.status == SalesOrderStatus.CONFIRMED and still_reserved > 0:
-                    # Best-effort release: reduce reservation we previously held.
-                    product = self.db.get(Product, line.product_id)
-                    release = min(still_reserved, float(product.reserved_qty))
-                    if release > 0:
-                        # Negative reservation movement = release reserved stock.
-                        self.inventory.apply_movement(
-                            product_id=product.id,
-                            movement_type=MovementType.SALE_RESERVATION,
-                            quantity=release,
-                            reference_type=ReferenceType.SALES_ORDER,
-                            reference_id=so.id, user_id=user_id,
-                            reserved_delta=-release,
-                        )
+                reserved = float(line.reserved_quantity)
+                if reserved <= 0:
+                    continue
+                product = self.db.get(Product, line.product_id)
+                release = min(reserved, float(product.reserved_qty))
+                if release > 0:
+                    # Negative reservation movement = release reserved stock.
+                    self.inventory.apply_movement(
+                        product_id=product.id,
+                        movement_type=MovementType.SALE_RESERVATION,
+                        quantity=release,
+                        reference_type=ReferenceType.SALES_ORDER,
+                        reference_id=so.id, user_id=user_id,
+                        reserved_delta=-release,
+                    )
+                line.reserved_quantity = 0.0
             so.status = SalesOrderStatus.CANCELLED
             self._audit_status(so, before)
         self.db.refresh(so)

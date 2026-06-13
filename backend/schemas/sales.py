@@ -37,6 +37,7 @@ class SalesOrderLineOut(BaseModel):
     product_id: int
     ordered_quantity: float
     delivered_quantity: float
+    reserved_quantity: float
     sales_price: float
     total: float
     remaining_to_deliver: float
