@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
 
+import { VoiceAssistantFAB } from "@/components/common/VoiceAssistantFAB";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 
@@ -14,6 +15,8 @@ export function AppLayout() {
           <Outlet />
         </main>
       </div>
+      {/* Floating voice assistant — present on every authenticated page */}
+      <VoiceAssistantFAB />
     </div>
   );
 }

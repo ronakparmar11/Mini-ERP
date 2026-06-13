@@ -1,13 +1,17 @@
-import { Plus, Search } from "lucide-react";
+import { Download, Plus, Search, Upload } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
+import { exportProducts } from "@/api/products";
 import { ProductDrawer } from "@/features/products/ProductDrawer";
+import { ProductImportDrawer } from "@/features/products/ProductImportDrawer";
 import { ProductsTable } from "@/features/products/ProductsTable";
 import { useProducts } from "@/features/products/hooks";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { getFriendlyError } from "@/utils/apiError";
 import type { Product } from "@/types/product";
 
 export function ProductsPage() {
@@ -17,6 +21,15 @@ export function ProductsPage() {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+
+  const onExport = async () => {
+    try {
+      await exportProducts();
+    } catch (err) {
+      toast.error(getFriendlyError(err));
+    }
+  };
 
   const openCreate = () => {
     setEditing(null);
@@ -46,10 +59,20 @@ export function ProductsPage() {
         title="Products"
         subtitle="Manage inventory, monitor stock levels, and configure procurement strategies."
         actions={
-          <Button onClick={openCreate}>
-            <Plus className="h-4 w-4" />
-            Create
-          </Button>
+          <>
+            <Button variant="secondary" size="sm" onClick={onExport}>
+              <Download className="h-4 w-4" />
+              Export Excel
+            </Button>
+            <Button variant="secondary" size="sm" onClick={() => setImportOpen(true)}>
+              <Upload className="h-4 w-4" />
+              Import Excel
+            </Button>
+            <Button onClick={openCreate}>
+              <Plus className="h-4 w-4" />
+              New Product
+            </Button>
+          </>
         }
       />
 
@@ -90,6 +113,7 @@ export function ProductsPage() {
       </div>
 
       <ProductDrawer open={drawerOpen} product={editing} onClose={() => setDrawerOpen(false)} />
+      <ProductImportDrawer open={importOpen} onClose={() => setImportOpen(false)} />
     </div>
   );
 }

@@ -3,12 +3,25 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createProduct,
   deleteProduct,
+  importProducts,
   listProducts,
   updateProduct,
 } from "@/api/products";
 import type { ProductCreate, ProductUpdate } from "@/types/product";
 
 const PRODUCTS_KEY = "products";
+
+/** Validate (commit=false) or import (commit=true) an .xlsx of products. */
+export const useImportProducts = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ file, commit }: { file: File; commit: boolean }) =>
+      importProducts(file, commit),
+    onSuccess: (res) => {
+      if (res.committed) qc.invalidateQueries({ queryKey: [PRODUCTS_KEY] });
+    },
+  });
+};
 
 export const useProducts = (search?: string) =>
   useQuery({

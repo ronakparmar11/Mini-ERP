@@ -512,6 +512,76 @@ def test_ai_import_normalize_merge_default_and_match(db_session, admin_user):
     assert by_name["unknown widget"].matched_product_id is None  # unmatched
 
 
+def _xlsx_bytes(rows, headers=None):
+    import io
+    from openpyxl import Workbook
+    from services.product_import_service import COLUMNS
+    wb = Workbook()
+    ws = wb.active
+    ws.append(headers or COLUMNS)
+    for r in rows:
+        ws.append(list(r))
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
+
+
+def test_product_import_validate_then_commit(db_session, admin_user):
+    """Mixed file: valid rows import, missing-name + bad-route error, duplicate
+    of an existing product is skipped. Existing CRUD untouched."""
+    from services.product_import_service import ProductImportService
+    from services.product_service import ProductService
+    # Pre-existing product → becomes a duplicate in the file.
+    _product(db_session, admin_user.id, name="Existing Widget")
+    db_session.commit()
+
+    rows = [
+        ("Wooden Table", 120, 40, "Manufacture", "Yes", None),  # valid
+        ("Office Chair", 80, 30, "purchase", "true", None),     # valid (case-insensitive)
+        ("", 10, 5, "Purchase", "Yes", None),                   # error: missing name
+        ("Bad Route", 10, 5, "Lease", "No", None),              # error: bad route
+        ("Existing Widget", 10, 5, "Purchase", "No", None),     # duplicate
+    ]
+    content = _xlsx_bytes(rows)
+    svc = ProductImportService(db_session)
+
+    preview = svc.process(content, commit=False, user_id=admin_user.id)
+    assert preview.success_count == 2
+    assert preview.failure_count == 2
+    assert preview.duplicate_count == 1
+    assert preview.committed is False
+    # Nothing created during validation.
+    assert len(ProductService(db_session).list()) == 1
+
+    result = svc.process(content, commit=True, user_id=admin_user.id)
+    assert result.success_count == 2 and result.committed is True
+    names = {p.name for p in ProductService(db_session).list()}
+    assert {"Wooden Table", "Office Chair", "Existing Widget"} <= names
+    assert "Bad Route" not in names  # invalid row skipped
+
+
+def test_product_import_invalid_price_and_missing_vendor(db_session, admin_user):
+    from services.product_import_service import ProductImportService
+    rows = [
+        ("Cheap Lamp", "abc", 5, "Purchase", "Yes", None),   # non-numeric price
+        ("Vendor Item", 10, 5, "Purchase", "Yes", 9999),     # vendor doesn't exist
+    ]
+    result = ProductImportService(db_session).process(
+        _xlsx_bytes(rows), commit=True, user_id=admin_user.id)
+    assert result.success_count == 0
+    assert result.failure_count == 2
+    fields = {e.field for e in result.errors}
+    assert "sales_price" in fields and "default_vendor_id" in fields
+
+
+def test_product_import_template_and_export(db_session, admin_user):
+    from services.product_import_service import ProductImportService
+    svc = ProductImportService(db_session)
+    tmpl = svc.build_template()
+    assert tmpl[:2] == b"PK"  # xlsx is a zip
+    assert len(svc.build_export()) > 0
+
+
 def test_executive_summary_via_api(db_session, admin_user, client, auth_headers):
     r = client.get("/api/v1/dashboard/executive-summary", headers=auth_headers)
     assert r.status_code == 200, r.text
