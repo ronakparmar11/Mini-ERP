@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { DrawerShell } from "@/components/common/DrawerShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -117,10 +118,7 @@ export function ProductDrawer({ open, product, onClose }: ProductDrawerProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="absolute inset-0 bg-[#0b1c30]/40 backdrop-blur-sm" onClick={onClose} />
-
-      <div className="pointer-events-auto relative flex h-full w-full max-w-md animate-fade-in flex-col border-l border-outline-variant bg-surface-container-lowest shadow-2xl">
+    <DrawerShell open={open} onClose={onClose} label={isEdit ? "Edit Product" : "New Product"}>
         {/* Header */}
         <div className="flex items-center justify-between border-b border-outline-variant p-4">
           <h3 className="text-title-sm text-on-background">{isEdit ? "Edit Product" : "New Product"}</h3>
@@ -230,8 +228,7 @@ export function ProductDrawer({ open, product, onClose }: ProductDrawerProps) {
             </Button>
           </div>
         </div>
-      </div>
-    </div>
+    </DrawerShell>
   );
 }
 

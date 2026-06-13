@@ -291,3 +291,202 @@ def test_reallocation_does_not_double_reserve(db_session, admin_user):
     assert second == 0.0      # nothing left to reserve -> no double reservation
     assert bed.reserved_qty == 13
     assert bed.free_to_use_qty == 0
+
+
+# --- 14. Purchase receipt re-allocates new stock to the waiting Sales Order -----
+def test_purchase_receipt_reallocates_stock_to_waiting_so(db_session, admin_user):
+    """Regression: SO with Pencil=20 (available) + Phone=1 (shortage). Confirm
+    reserves the pencils and auto-raises a PO for the phone; receiving that PO
+    must reserve the new phone back to the SO so the full order is deliverable
+    without manual intervention (previously the PO receipt skipped re-allocation).
+    """
+    uid = admin_user.id
+    pencil = _product(db_session, uid, name="Pencil", on_hand_qty=20, sales_price=1)
+    phone = _product(db_session, uid, name="Phone", on_hand_qty=0, sales_price=500,
+                     cost_price=300, procure_on_demand=True,
+                     procurement_method=ProcurementMethod.PURCHASE)
+
+    so = SalesService(db_session).create(
+        SalesOrderCreate(customer_name="Bob", lines=[
+            SalesOrderLineCreate(product_id=pencil.id, ordered_quantity=20),
+            SalesOrderLineCreate(product_id=phone.id, ordered_quantity=1),
+        ]),
+        user_id=uid)
+    result = SalesService(db_session).confirm(so.id, user_id=uid)
+
+    db_session.refresh(pencil)
+    db_session.refresh(phone)
+    assert pencil.reserved_qty == 20            # available stock reserved
+    assert phone.reserved_qty == 0              # nothing to reserve yet
+    assert len(result.generated_purchase_order_ids) == 1
+    po_id = result.generated_purchase_order_ids[0]
+    po = PurchaseService(db_session).get(po_id)
+    assert po.source_sales_order_id == so.id
+
+    # Confirm + receive the auto-generated PO in full.
+    PurchaseService(db_session).confirm(po_id, user_id=uid)
+    PurchaseService(db_session).receive(po_id, ReceiptRequest(), user_id=uid)
+
+    # The newly received phone is automatically reserved back to the SO.
+    db_session.refresh(phone)
+    assert phone.reserved_qty == 1
+    assert phone.free_to_use_qty == 0
+
+    so = SalesService(db_session).get(so.id)
+    line_by_product = {l.product_id: l for l in so.lines}
+    assert float(line_by_product[phone.id].reserved_quantity) == 1   # == ordered
+    assert float(line_by_product[pencil.id].reserved_quantity) == 20
+
+    # The re-allocation recorded a SALE_RESERVATION movement for the phone.
+    phone_moves = InventoryService(db_session).list_movements(product_id=phone.id)
+    assert MovementType.SALE_RESERVATION in [m.movement_type for m in phone_moves]
+
+    # Delivery of the whole order now succeeds without manual intervention.
+    so = SalesService(db_session).deliver(so.id, DeliveryRequest(), user_id=uid)
+    assert so.status == SalesOrderStatus.DELIVERED
+    db_session.refresh(phone)
+    db_session.refresh(pencil)
+    assert phone.on_hand_qty == 0 and phone.reserved_qty == 0
+    assert pencil.on_hand_qty == 0 and pencil.reserved_qty == 0
+
+
+# --- Invoicing (assisted Order-to-Cash) ----------------------------------------
+def _delivered_so(db, uid, *, email="cust@example.com", qty=4, price=5, on_hand=10):
+    """Create, confirm and fully deliver a sales order; return the SO."""
+    p = _product(db, uid, on_hand_qty=on_hand, sales_price=price)
+    so = SalesService(db).create(
+        SalesOrderCreate(customer_name="Bob", customer_email=email,
+                         lines=[SalesOrderLineCreate(product_id=p.id, ordered_quantity=qty)]),
+        user_id=uid)
+    SalesService(db).confirm(so.id, user_id=uid)
+    so = SalesService(db).deliver(so.id, DeliveryRequest(), user_id=uid)
+    assert so.status == SalesOrderStatus.DELIVERED
+    return so
+
+
+def test_generate_invoice_only_for_delivered_so(db_session, admin_user):
+    from services.invoice_service import InvoiceService
+    p = _product(db_session, admin_user.id, on_hand_qty=10, sales_price=5)
+    so = SalesService(db_session).create(
+        SalesOrderCreate(customer_name="Bob",
+                         lines=[SalesOrderLineCreate(product_id=p.id, ordered_quantity=2)]),
+        user_id=admin_user.id)
+    with pytest.raises(BusinessRuleError):
+        InvoiceService(db_session).generate_invoice(so.id, user_id=admin_user.id)
+
+
+def test_generate_invoice_creates_one_invoice_with_totals(db_session, admin_user):
+    from services.invoice_service import InvoiceService
+    from utils.enums import InvoiceStatus
+    so = _delivered_so(db_session, admin_user.id, qty=4, price=5)
+    inv = InvoiceService(db_session).generate_invoice(so.id, user_id=admin_user.id)
+
+    assert inv.status == InvoiceStatus.DRAFT
+    assert inv.sales_order_id == so.id
+    assert inv.customer_email == "cust@example.com"
+    assert float(inv.total_amount) == 20.0       # 4 * 5
+    assert len(inv.lines) == 1
+    assert float(inv.lines[0].quantity) == 4
+    assert inv.invoice_number.startswith("INV-")
+    # PDF written to disk.
+    import os
+    assert inv.pdf_path and os.path.exists(inv.pdf_path)
+
+
+def test_duplicate_invoice_blocked(db_session, admin_user):
+    from services.invoice_service import InvoiceService
+    so = _delivered_so(db_session, admin_user.id)
+    InvoiceService(db_session).generate_invoice(so.id, user_id=admin_user.id)
+    with pytest.raises(BusinessRuleError):
+        InvoiceService(db_session).generate_invoice(so.id, user_id=admin_user.id)
+
+
+def test_invoice_numbering_sequential_and_yearly(db_session, admin_user):
+    from datetime import datetime
+    from services.invoice_service import InvoiceService
+    so1 = _delivered_so(db_session, admin_user.id)
+    so2 = _delivered_so(db_session, admin_user.id)
+    inv1 = InvoiceService(db_session).generate_invoice(so1.id, user_id=admin_user.id)
+    inv2 = InvoiceService(db_session).generate_invoice(so2.id, user_id=admin_user.id)
+    year = datetime.utcnow().year
+    assert inv1.invoice_number == f"INV-{year}-001"
+    assert inv2.invoice_number == f"INV-{year}-002"
+
+
+def test_send_invoice_transitions_to_sent(db_session, admin_user):
+    """No RESEND_API_KEY in tests -> simulation mode, still transitions DRAFT->SENT."""
+    from services.invoice_service import InvoiceService
+    from services.email_service import EmailService
+    from utils.enums import InvoiceStatus
+    so = _delivered_so(db_session, admin_user.id)
+    inv = InvoiceService(db_session).generate_invoice(so.id, user_id=admin_user.id)
+    sent = EmailService(db_session).send_invoice_email(inv.id, user_id=admin_user.id)
+    assert sent.status == InvoiceStatus.SENT
+    assert sent.sent_at is not None
+
+
+def test_send_invoice_requires_email(db_session, admin_user):
+    from services.invoice_service import InvoiceService
+    from services.email_service import EmailService
+    from utils.exceptions import ValidationError
+    so = _delivered_so(db_session, admin_user.id, email=None)
+    inv = InvoiceService(db_session).generate_invoice(so.id, user_id=admin_user.id)
+    with pytest.raises(ValidationError):
+        EmailService(db_session).send_invoice_email(inv.id, user_id=admin_user.id)
+
+
+def test_invoice_audit_logs_written(db_session, admin_user):
+    from services.invoice_service import InvoiceService
+    from services.email_service import EmailService
+    from services.audit_service import AuditService
+    from utils.enums import AuditModule
+    so = _delivered_so(db_session, admin_user.id)
+    inv = InvoiceService(db_session).generate_invoice(so.id, user_id=admin_user.id)
+    EmailService(db_session).send_invoice_email(inv.id, user_id=admin_user.id)
+    logs = AuditService(db_session).list_logs(module=AuditModule.INVOICE, record_id=inv.id)
+    fields = {l.field_name for l in logs}
+    assert "invoice_number" in fields   # creation
+    assert "status" in fields           # DRAFT -> SENT
+
+
+def test_generate_invoice_via_api(db_session, admin_user, client, auth_headers):
+    """End-to-end through the HTTP layer: generate, list, fetch, download."""
+    so = _delivered_so(db_session, admin_user.id)
+    r = client.post(f"/api/v1/sales-orders/{so.id}/generate-invoice", headers=auth_headers)
+    assert r.status_code == 201, r.text
+    inv = r.json()
+    assert inv["status"] == "DRAFT"
+
+    assert client.get("/api/v1/invoices", headers=auth_headers).status_code == 200
+    assert client.get(f"/api/v1/invoices/{inv['id']}", headers=auth_headers).status_code == 200
+
+    dl = client.get(f"/api/v1/invoices/{inv['id']}/download", headers=auth_headers)
+    assert dl.status_code == 200
+    assert dl.headers["content-type"] == "application/pdf"
+
+
+# --- Executive dashboard summary aggregates correctly ---------------------------
+def test_executive_summary(db_session, admin_user):
+    from services.dashboard_service import DashboardService
+    so = _delivered_so(db_session, admin_user.id, qty=4, price=5)  # delivers 4 @ 5
+    from services.invoice_service import InvoiceService
+    InvoiceService(db_session).generate_invoice(so.id, user_id=admin_user.id)
+
+    summary = DashboardService(db_session).executive_summary()
+    assert summary.revenue_this_month == 20.0          # 4 * 5, invoiced this month
+    assert summary.sales_orders_total == 1
+    assert summary.fulfillment_rate == 100.0           # 1 delivered / 1 confirmed-plus
+    assert summary.outstanding_invoices == 1           # the generated invoice is DRAFT
+    assert summary.outstanding_invoices_value == 20.0
+    assert len(summary.revenue_trend) == 4
+    assert summary.top_products and summary.top_products[0].units_sold == 4
+
+
+def test_executive_summary_via_api(db_session, admin_user, client, auth_headers):
+    r = client.get("/api/v1/dashboard/executive-summary", headers=auth_headers)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    for key in ("revenue_this_month", "fulfillment_rate", "inventory_health",
+                "active_manufacturing", "outstanding_invoices", "top_products",
+                "revenue_trend"):
+        assert key in body

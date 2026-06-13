@@ -6,11 +6,19 @@ from database.session import get_db
 from dependencies.auth import require
 from dependencies.permissions import P
 from schemas.dashboard import (
-    InventorySummary, LowStockProduct, ManufacturingStats, PendingOrderSummary,
+    ExecutiveSummary, InventorySummary, LowStockProduct, ManufacturingStats,
+    PendingOrderSummary,
 )
 from services.dashboard_service import DashboardService
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
+
+
+@router.get("/executive-summary", response_model=ExecutiveSummary,
+            dependencies=[Depends(require(P.PRODUCTS_VIEW))])
+def executive_summary(db: Session = Depends(get_db)):
+    """Aggregated owner-facing KPIs for the executive dashboard."""
+    return DashboardService(db).executive_summary()
 
 
 @router.get("/low-stock", response_model=list[LowStockProduct],

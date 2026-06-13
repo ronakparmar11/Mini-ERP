@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { DrawerShell } from "@/components/common/DrawerShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -101,9 +102,7 @@ export function CreateBomDrawer({ open, onClose }: { open: boolean; onClose: () 
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="absolute inset-0 bg-[#0b1c30]/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="pointer-events-auto relative flex h-full w-full max-w-lg animate-fade-in flex-col border-l border-outline-variant bg-surface-container-lowest shadow-2xl">
+    <DrawerShell open={open} onClose={onClose} widthClassName="max-w-lg" label="New Bill of Materials">
         <div className="flex items-center justify-between border-b border-outline-variant p-4">
           <h3 className="text-title-sm text-on-background">New Bill of Materials</h3>
           <button onClick={onClose} className="rounded-full p-1 text-on-surface-variant hover:bg-surface-container">
@@ -279,7 +278,6 @@ export function CreateBomDrawer({ open, onClose }: { open: boolean; onClose: () 
             {createMut.isPending ? "Creating…" : "Create BoM"}
           </Button>
         </div>
-      </div>
-    </div>
+    </DrawerShell>
   );
 }

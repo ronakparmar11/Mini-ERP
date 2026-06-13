@@ -7,6 +7,7 @@ import { Modal } from "@/components/common/Modal";
 import { ErrorState, LoadingState } from "@/components/common/StateViews";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
+import { InvoiceBillingPanel } from "@/features/invoices/InvoiceBillingPanel";
 import { useManufacturingOrders } from "@/features/manufacturing/hooks";
 import { useProducts } from "@/features/products/hooks";
 import { usePurchaseOrders } from "@/features/purchase/hooks";
@@ -241,6 +242,9 @@ export function SalesOrderDetailPage() {
         onConfirm={onConfirm}
         onDeliver={() => setShowDeliver(true)}
       />
+
+      {/* Invoice & billing (assisted Order-to-Cash) — only once fulfilled */}
+      {order.status === "DELIVERED" && <InvoiceBillingPanel salesOrderId={order.id} />}
 
       {/* Dialogs */}
       <ConfirmationResultDialog open={showResult} onClose={() => setShowResult(false)} result={confirmResult} />

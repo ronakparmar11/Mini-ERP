@@ -168,12 +168,9 @@ class ManufacturingService:
             )
 
             # 2b) Re-allocate the freshly produced stock back to the Sales Orders
-            #     that were short at confirmation (FIFO). Local import avoids a
-            #     circular import (SalesService imports ManufacturingService).
-            from services.sales_service import SalesService
-            SalesService(self.db).reallocate_for_product(
-                mo.finished_product_id, user_id
-            )
+            #     that were short at confirmation (FIFO). Shared with the goods
+            #     receipt path via InventoryService.
+            self.inventory.reallocate_reservations(mo.finished_product_id, user_id)
 
             # 3) Record actual durations (default to expected if not provided).
             for op in mo.operations:

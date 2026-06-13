@@ -20,7 +20,9 @@ export function ConfirmationResultDialog({
   result: ConfirmationResult | null;
 }) {
   const navigate = useNavigate();
-  if (!result) return null;
+  // Guard on BOTH open and data so a stale `open` can never render an
+  // orphaned overlay with no content (and vice-versa).
+  if (!open || !result) return null;
 
   const { generated_purchase_order_ids: poIds, generated_manufacturing_order_ids: moIds, messages } = result;
   const hasProcurement = poIds.length > 0 || moIds.length > 0;

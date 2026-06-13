@@ -1,6 +1,6 @@
 import { Plus } from "lucide-react";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { PageHeader } from "@/components/common/PageHeader";
 import { StatusBadge } from "@/components/common/StatusBadge";
@@ -24,10 +24,20 @@ const FILTERS: { label: string; value: SalesOrderStatus | "ALL" }[] = [
 
 export function SalesOrdersPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [filter, setFilter] = useState<SalesOrderStatus | "ALL">("ALL");
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const { data, isLoading, error, refetch } = useSalesOrders(filter === "ALL" ? undefined : filter);
+
+  // Voice / deep-link: open the create drawer when navigated with state.create.
+  useEffect(() => {
+    if ((location.state as { create?: boolean } | null)?.create) {
+      setDrawerOpen(true);
+      navigate(location.pathname, { replace: true, state: null }); // clear so back/refresh won't reopen
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key]);
 
   const columns: Column<SalesOrder>[] = [
     {

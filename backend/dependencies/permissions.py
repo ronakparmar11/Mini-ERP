@@ -37,6 +37,11 @@ class P:
     PRODUCTS_EDIT = "products:edit"
     PRODUCTS_DELETE = "products:delete"
 
+    # Invoicing (assisted Order-to-Cash)
+    INVOICE_VIEW = "invoice:view"
+    INVOICE_CREATE = "invoice:create"  # generate an invoice for a delivered SO
+    INVOICE_SEND = "invoice:send"      # email the invoice to the customer
+
     # Cross-cutting (admin-only by default)
     USERS_MANAGE = "users:manage"
     AUDIT_VIEW = "audit:view"

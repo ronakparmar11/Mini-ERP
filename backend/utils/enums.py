@@ -42,6 +42,13 @@ class ManufacturingOrderStatus(str, Enum):
     CANCELLED = "CANCELLED"
 
 
+class InvoiceStatus(str, Enum):
+    """Assisted invoice lifecycle. The ERP recommends invoicing but never sends
+    automatically — the user moves DRAFT → SENT explicitly."""
+    DRAFT = "DRAFT"
+    SENT = "SENT"
+
+
 class MovementType(str, Enum):
     """Every physical/logical stock change is tagged with one of these.
 
@@ -71,3 +78,4 @@ class AuditModule(str, Enum):
     PURCHASE_ORDER = "PURCHASE_ORDER"
     MANUFACTURING_ORDER = "MANUFACTURING_ORDER"
     BOM = "BOM"
+    INVOICE = "INVOICE"

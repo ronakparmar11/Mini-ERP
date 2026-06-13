@@ -16,7 +16,8 @@ from sqlalchemy.orm import Session, lazyload
 
 from models.inventory import InventoryMovement
 from models.product import Product
-from utils.enums import MovementType, ReferenceType
+from models.sales import SalesOrder, SalesOrderLine
+from utils.enums import MovementType, ReferenceType, SalesOrderStatus
 from utils.exceptions import InsufficientStockError, NotFoundError
 
 
@@ -140,6 +141,75 @@ class InventoryService:
             quantity=qty, reference_type=ReferenceType.MANUFACTURING_ORDER,
             reference_id=mo_id, user_id=user_id, on_hand_delta=+qty,
         )
+
+    # ---- Supply re-allocation (shared by purchase receipt + MO production) ---
+
+    def reallocate_reservations(self, product_id: int, user_id: int | None) -> float:
+        """Reserve newly available free stock of a product against waiting demand.
+
+        Invoked after ANY supply event that raises free-to-use stock — a goods
+        receipt (PurchaseService.receive) or a production run
+        (ManufacturingService.produce) — so freshly available stock is committed
+        back to the Sales Orders that were short at confirmation time, instead of
+        lingering as free stock.
+
+        Rules:
+          * Only CONFIRMED / PARTIALLY_DELIVERED orders are eligible.
+          * Allocate to the oldest eligible orders first (FIFO).
+          * Per line, fill only `remaining_to_reserve` = ordered − delivered −
+            reserved, so an already-reserved quantity is never reserved twice.
+          * Never reserve more than the free-to-use stock on hand.
+
+        Must run inside an existing transaction (the caller's unit_of_work);
+        each reservation writes a SALE_RESERVATION inventory movement.
+        Returns the total quantity newly reserved.
+        """
+        product = self.db.get(Product, product_id)
+        if product is None:
+            return 0.0
+
+        available = product.free_to_use_qty  # on_hand − reserved (incl. new units)
+        if available <= 1e-9:
+            return 0.0
+
+        eligible_lines = (
+            self.db.query(SalesOrderLine)
+            .join(SalesOrder, SalesOrderLine.order_id == SalesOrder.id)
+            .filter(
+                SalesOrderLine.product_id == product_id,
+                SalesOrder.status.in_([
+                    SalesOrderStatus.CONFIRMED,
+                    SalesOrderStatus.PARTIALLY_DELIVERED,
+                ]),
+            )
+            .order_by(  # FIFO: oldest orders first
+                SalesOrder.creation_date.asc(),
+                SalesOrder.id.asc(),
+                SalesOrderLine.id.asc(),
+            )
+            .all()
+        )
+
+        total_allocated = 0.0
+        for line in eligible_lines:
+            if available <= 1e-9:
+                break
+            needed = line.remaining_to_reserve
+            if needed <= 1e-9:
+                continue
+            alloc = min(needed, available)
+            if alloc <= 1e-9:
+                continue
+            # reserved += alloc and record the SALE_RESERVATION movement.
+            self.reserve_for_sale(
+                product_id=product_id, qty=alloc,
+                so_id=line.order_id, user_id=user_id,
+            )
+            line.reserved_quantity = float(line.reserved_quantity) + alloc
+            available -= alloc
+            total_allocated += alloc
+
+        return total_allocated
 
     # ---- Read helpers --------------------------------------------------------
 

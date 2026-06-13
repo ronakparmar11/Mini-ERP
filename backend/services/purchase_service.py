@@ -132,6 +132,7 @@ class PurchaseService:
 
         before = {"status": po.status}
         with unit_of_work(self.db):
+            received_product_ids: list[int] = []
             for line, qty in plan:
                 if qty <= 0:
                     continue
@@ -140,6 +141,14 @@ class PurchaseService:
                     po_id=po.id, user_id=user_id,
                 )
                 line.received_quantity = float(line.received_quantity) + qty
+                if line.product_id not in received_product_ids:
+                    received_product_ids.append(line.product_id)
+
+            # Re-allocate the freshly received stock back to the Sales Orders
+            # that were short at confirmation (FIFO). Mirrors the MO production
+            # path so a received PO immediately makes its source SO deliverable.
+            for product_id in received_product_ids:
+                self.inventory.reallocate_reservations(product_id, user_id)
 
             fully = all(l.remaining_to_receive <= 1e-9 for l in po.lines)
             po.status = (PurchaseOrderStatus.RECEIVED if fully

@@ -10,7 +10,7 @@ import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import type { AuditLog, AuditModule } from "@/types/audit";
 import { formatDateTime } from "@/utils/format";
 
-const MODULES: AuditModule[] = ["PRODUCT", "SALES_ORDER", "PURCHASE_ORDER", "MANUFACTURING_ORDER", "BOM"];
+const MODULES: AuditModule[] = ["PRODUCT", "SALES_ORDER", "PURCHASE_ORDER", "MANUFACTURING_ORDER", "BOM", "INVOICE"];
 
 const MODULE_TONE: Record<AuditModule, Parameters<typeof Badge>[0]["tone"]> = {
   PRODUCT: "info",
@@ -18,6 +18,7 @@ const MODULE_TONE: Record<AuditModule, Parameters<typeof Badge>[0]["tone"]> = {
   PURCHASE_ORDER: "success",
   MANUFACTURING_ORDER: "warning",
   BOM: "neutral",
+  INVOICE: "danger",
 };
 
 const selectClass =

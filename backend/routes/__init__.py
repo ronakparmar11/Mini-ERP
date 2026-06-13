@@ -2,7 +2,7 @@
 from fastapi import APIRouter
 
 from routes import (
-    audit, auth, bom, dashboard, inventory, manufacturing, products,
+    audit, auth, bom, dashboard, inventory, invoices, manufacturing, products,
     purchase, sales, users,
 )
 
@@ -17,3 +17,4 @@ api_router.include_router(manufacturing.router)
 api_router.include_router(inventory.router)
 api_router.include_router(audit.router)
 api_router.include_router(dashboard.router)
+api_router.include_router(invoices.router)

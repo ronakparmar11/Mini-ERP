@@ -1,6 +1,7 @@
 import { Bell, HelpCircle, LogOut, Search, Settings } from "lucide-react";
 import { useState } from "react";
 
+import { VoiceAssistantButton } from "@/components/common/VoiceAssistantButton";
 import { useAuth } from "@/features/auth/AuthContext";
 import { cn } from "@/utils/cn";
 
@@ -31,6 +32,8 @@ export function Topbar() {
       </div>
 
       <div className="ml-auto flex items-center gap-1">
+        <VoiceAssistantButton />
+        <div className="mx-1 h-6 w-px bg-outline-variant/60" />
         <IconButton label="Notifications">
           <Bell className="h-5 w-5" />
         </IconButton>

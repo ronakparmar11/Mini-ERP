@@ -14,6 +14,7 @@ class SalesOrderLineCreate(BaseModel):
 
 class SalesOrderCreate(BaseModel):
     customer_name: str = Field(min_length=1, max_length=200)
+    customer_email: str | None = Field(default=None, max_length=200)
     customer_address: str | None = None
     salesperson: str | None = None
     lines: list[SalesOrderLineCreate] = Field(min_length=1)
@@ -48,6 +49,7 @@ class SalesOrderOut(BaseModel):
 
     id: int
     customer_name: str
+    customer_email: str | None
     customer_address: str | None
     salesperson: str | None
     creation_date: datetime

@@ -3,7 +3,8 @@ export type AuditModule =
   | "SALES_ORDER"
   | "PURCHASE_ORDER"
   | "MANUFACTURING_ORDER"
-  | "BOM";
+  | "BOM"
+  | "INVOICE";
 
 /** AuditLogOut from GET /audit-logs. */
 export interface AuditLog {

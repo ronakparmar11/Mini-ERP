@@ -26,6 +26,15 @@ class Settings(BaseSettings):
     # --- Business rules (tunable defaults) ---
     LOW_STOCK_THRESHOLD: float = 5.0  # used by dashboard "low stock" report
 
+    # --- Invoicing (assisted Order-to-Cash) ---
+    COMPANY_NAME: str = "Mini ERP"  # printed on invoice PDFs
+    # Where generated invoice PDFs are stored on disk (created if missing).
+    INVOICE_STORAGE_DIR: str = "generated_invoices"
+    # Resend transactional email. If RESEND_API_KEY is blank the email service
+    # runs in dev/simulation mode (no network call) so the flow stays demoable.
+    RESEND_API_KEY: str = ""
+    RESEND_FROM_EMAIL: str = "Mini ERP <onboarding@resend.dev>"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

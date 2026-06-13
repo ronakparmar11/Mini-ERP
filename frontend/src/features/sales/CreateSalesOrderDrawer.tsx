@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { DrawerShell } from "@/components/common/DrawerShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +19,7 @@ import { formatCurrency } from "@/utils/format";
 
 const customerSchema = z.object({
   customer_name: z.string().min(1, "Customer name is required"),
+  customer_email: z.string().email("Enter a valid email").optional().or(z.literal("")),
   customer_address: z.string().optional(),
   salesperson: z.string().optional(),
 });
@@ -41,7 +43,7 @@ export function CreateSalesOrderDrawer({ open, onClose }: { open: boolean; onClo
 
   useEffect(() => {
     if (open) {
-      reset({ customer_name: "", customer_address: "", salesperson: "" });
+      reset({ customer_name: "", customer_email: "", customer_address: "", salesperson: "" });
       setLines([blankLine()]);
       setLineError(null);
     }
@@ -64,6 +66,7 @@ export function CreateSalesOrderDrawer({ open, onClose }: { open: boolean; onClo
 
     const body: SalesOrderCreate = {
       customer_name: customer.customer_name,
+      customer_email: customer.customer_email || null,
       customer_address: customer.customer_address || null,
       salesperson: customer.salesperson || null,
       lines: validLines.map((l) => ({
@@ -84,9 +87,7 @@ export function CreateSalesOrderDrawer({ open, onClose }: { open: boolean; onClo
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="absolute inset-0 bg-[#0b1c30]/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="pointer-events-auto relative flex h-full w-full max-w-md animate-fade-in flex-col border-l border-outline-variant bg-surface-container-lowest shadow-2xl">
+    <DrawerShell open={open} onClose={onClose} label="New Sales Order">
         <div className="flex items-center justify-between border-b border-outline-variant p-4">
           <h3 className="text-title-sm text-on-background">New Sales Order</h3>
           <button onClick={onClose} className="rounded-full p-1 text-on-surface-variant hover:bg-surface-container">
@@ -104,6 +105,13 @@ export function CreateSalesOrderDrawer({ open, onClose }: { open: boolean; onClo
               <Input id="customer_name" {...register("customer_name")} />
               {errors.customer_name && (
                 <p className="mt-1 text-body-sm text-error">{errors.customer_name.message}</p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="customer_email">Email (optional)</Label>
+              <Input id="customer_email" type="email" {...register("customer_email")} />
+              {errors.customer_email && (
+                <p className="mt-1 text-body-sm text-error">{errors.customer_email.message}</p>
               )}
             </div>
             <div>
@@ -143,7 +151,6 @@ export function CreateSalesOrderDrawer({ open, onClose }: { open: boolean; onClo
             </Button>
           </div>
         </div>
-      </div>
-    </div>
+    </DrawerShell>
   );
 }

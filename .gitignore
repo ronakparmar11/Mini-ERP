@@ -6,3 +6,6 @@ __pycache__/
 *.db
 .pytest_cache/
 .mypy_cache/
+# Generated invoice PDFs
+generated_invoices/
+backend/generated_invoices/

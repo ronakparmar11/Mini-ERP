@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 
 import { cn } from "@/utils/cn";
 
@@ -18,6 +19,8 @@ const sizeClass = { sm: "max-w-md", md: "max-w-lg", lg: "max-w-2xl" } as const;
 
 /** Lightweight centered modal with backdrop + Esc-to-close. Reused for dialogs. */
 export function Modal({ open, onClose, title, description, children, footer, size = "md" }: ModalProps) {
+  const location = useLocation();
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -25,16 +28,32 @@ export function Modal({ open, onClose, title, description, children, footer, siz
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
+  // Safety net: never let an overlay survive a route change. Remember the path
+  // the modal opened on; if navigation moves away while it is still open, close
+  // it so no orphaned backdrop can linger over the next page.
+  const openedPath = useRef<string | null>(null);
+  useEffect(() => {
+    if (!open) {
+      openedPath.current = null;
+      return;
+    }
+    if (openedPath.current === null) {
+      openedPath.current = location.pathname; // record where we opened (no-op on mount)
+    } else if (location.pathname !== openedPath.current) {
+      onClose();
+    }
+  }, [open, location.pathname, onClose]);
+
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[#0b1c30]/40 backdrop-blur-sm" onClick={onClose} />
+    <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
+      <div className="absolute inset-0 z-40 bg-[#0b1c30]/40 backdrop-blur-sm" onClick={onClose} />
       <div
         role="dialog"
         aria-modal="true"
         className={cn(
-          "relative flex max-h-[90vh] w-full animate-fade-in flex-col rounded-xl border border-outline-variant bg-surface-container-lowest shadow-2xl",
+          "relative z-50 flex max-h-[90vh] w-full animate-fade-in flex-col rounded-xl border border-outline-variant bg-surface-container-lowest shadow-2xl",
           sizeClass[size],
         )}
       >

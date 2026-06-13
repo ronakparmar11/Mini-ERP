@@ -1,7 +1,7 @@
 import { Boxes, LifeBuoy, Plus, Settings } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
-import { NAV_ITEMS } from "@/components/layout/navItems";
+import { NAV_SECTIONS } from "@/components/layout/navItems";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/cn";
 
@@ -28,23 +28,32 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="scrollbar-thin mt-4 flex-1 space-y-1 overflow-y-auto px-3">
-        {NAV_ITEMS.map(({ label, to, icon: Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-body-md transition-colors",
-                isActive
-                  ? "bg-secondary-container font-semibold text-primary"
-                  : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
-              )
-            }
-          >
-            <Icon className="h-5 w-5 shrink-0" />
-            <span>{label}</span>
-          </NavLink>
+      <nav className="scrollbar-thin mt-4 flex-1 space-y-4 overflow-y-auto px-3 pb-4">
+        {NAV_SECTIONS.map((section, i) => (
+          <div key={section.label ?? `top-${i}`} className="space-y-1">
+            {section.label && (
+              <p className="px-3 pb-1 pt-2 text-label-upper uppercase tracking-wide text-on-surface-variant/70">
+                {section.label}
+              </p>
+            )}
+            {section.items.map(({ label, to, icon: Icon }) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-body-md transition-colors",
+                    isActive
+                      ? "bg-secondary-container font-semibold text-primary"
+                      : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
+                  )
+                }
+              >
+                <Icon className="h-5 w-5 shrink-0" />
+                <span>{label}</span>
+              </NavLink>
+            ))}
+          </div>
         ))}
       </nav>
 

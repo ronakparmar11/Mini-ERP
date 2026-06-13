@@ -1,4 +1,4 @@
-import { AlertTriangle, Cog, ShoppingCart, Truck } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Cog, FileText, ShoppingCart, Truck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
@@ -11,8 +11,9 @@ import {
   usePendingManufacturing,
   usePendingPurchases,
 } from "@/features/dashboard/hooks";
+import { useInvoices } from "@/features/invoices/hooks";
 import { useSalesOrders } from "@/features/sales/hooks";
-import { formatNumber } from "@/utils/format";
+import { formatCurrency, formatNumber } from "@/utils/format";
 
 interface ActionItem {
   key: string;
@@ -31,6 +32,7 @@ export function ActionCenter() {
   const pendingMfg = usePendingManufacturing();
   const lowStock = useLowStock();
   const sales = useSalesOrders();
+  const invoices = useInvoices();
 
   // Needs Procurement — open POs + MOs not yet in production.
   const needsProcurement = useMemo<ActionItem[]>(() => {
@@ -77,6 +79,20 @@ export function ActionCenter() {
       }));
   }, [sales.data]);
 
+  // Invoices Awaiting Dispatch — generated but not yet emailed (DRAFT).
+  const awaitingDispatch = useMemo<ActionItem[]>(
+    () =>
+      (invoices.data ?? [])
+        .filter((inv) => inv.status === "DRAFT")
+        .map((inv) => ({
+          key: `inv-${inv.id}`,
+          label: inv.invoice_number,
+          sublabel: `${inv.customer_name} · ${formatCurrency(inv.total_amount)}`,
+          to: `/invoices/${inv.id}`,
+        })),
+    [invoices.data],
+  );
+
   const lowStockItems = useMemo<ActionItem[]>(
     () =>
       (lowStock.data ?? []).map((p) => ({
@@ -89,7 +105,7 @@ export function ActionCenter() {
   );
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
       <ActionList
         title="Needs Procurement"
         icon={ShoppingCart}
@@ -115,6 +131,14 @@ export function ActionCenter() {
         emptyMessage="No orders are fully reserved yet."
       />
       <ActionList
+        title="Invoices Awaiting Dispatch"
+        icon={FileText}
+        tone="info"
+        items={awaitingDispatch}
+        isLoading={invoices.isLoading}
+        emptyMessage="No draft invoices awaiting dispatch."
+      />
+      <ActionList
         title="Low Stock Alerts"
         icon={AlertTriangle}
         tone="danger"
@@ -126,7 +150,10 @@ export function ActionCenter() {
   );
 }
 
-const MAX_VISIBLE = 4;
+/** Max records shown per queue before collapsing into a "+X more" row. */
+const MAX_VISIBLE = 3;
+/** Fixed body height so every Action Center card shares an identical height. */
+const BODY_HEIGHT = "h-[184px]";
 
 function ActionList({
   title,
@@ -148,6 +175,7 @@ function ActionList({
 
   return (
     <SectionCard
+      className="h-full"
       title={
         <span className="flex items-center gap-2">
           <Icon className="h-4 w-4 text-outline" />
@@ -155,14 +183,20 @@ function ActionList({
         </span>
       }
       actions={<Badge tone={tone}>{isLoading ? "…" : items.length}</Badge>}
-      bodyClassName="p-2"
+      bodyClassName={`flex flex-col ${BODY_HEIGHT} p-2`}
     >
       {isLoading ? (
-        <p className="p-3 text-body-sm text-on-surface-variant">Loading…</p>
+        <div className="flex flex-1 items-center justify-center">
+          <p className="text-body-sm text-on-surface-variant">Loading…</p>
+        </div>
       ) : items.length === 0 ? (
-        <p className="p-3 text-body-sm text-on-surface-variant">{emptyMessage}</p>
+        <div className="flex flex-1 flex-col items-center justify-center gap-1 px-4 text-center">
+          <CheckCircle2 className="h-6 w-6 text-tertiary-container" />
+          <p className="text-body-md font-semibold text-on-surface">All caught up</p>
+          <p className="text-[11px] text-on-surface-variant">{emptyMessage}</p>
+        </div>
       ) : (
-        <ul className="space-y-1">
+        <ul className="flex-1 space-y-1">
           {visible.map((it) => (
             <li key={it.key}>
               <Link
@@ -181,7 +215,11 @@ function ActionList({
             </li>
           ))}
           {extra > 0 && (
-            <li className="px-3 py-1 text-[11px] text-on-surface-variant">+{extra} more</li>
+            <li>
+              <span className="block px-3 py-1 text-[11px] font-medium text-on-surface-variant">
+                +{extra} more
+              </span>
+            </li>
           )}
         </ul>
       )}

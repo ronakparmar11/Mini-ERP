@@ -12,6 +12,7 @@ from models.bom import BillOfMaterials, BoMComponent, BoMOperation
 from models.manufacturing import ManufacturingOrder, MOComponent, MOOperation
 from models.inventory import InventoryMovement
 from models.audit import AuditLog
+from models.invoice import Invoice, InvoiceLine
 
 __all__ = [
     "Base",
@@ -29,4 +30,6 @@ __all__ = [
     "MOOperation",
     "InventoryMovement",
     "AuditLog",
+    "Invoice",
+    "InvoiceLine",
 ]

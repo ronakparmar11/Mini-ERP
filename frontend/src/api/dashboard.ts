@@ -1,4 +1,5 @@
 import type {
+  ExecutiveSummary,
   InventorySummary,
   LowStockProduct,
   ManufacturingStats,
@@ -6,6 +7,9 @@ import type {
 } from "@/types/dashboard";
 
 import { api } from "./axios";
+
+export const getExecutiveSummary = (): Promise<ExecutiveSummary> =>
+  api.get<ExecutiveSummary>("/dashboard/executive-summary").then((r) => r.data);
 
 export const getInventorySummary = (): Promise<InventorySummary> =>
   api.get<InventorySummary>("/dashboard/inventory-summary").then((r) => r.data);

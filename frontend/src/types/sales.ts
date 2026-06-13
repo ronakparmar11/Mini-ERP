@@ -20,6 +20,7 @@ export interface SalesOrderLine {
 export interface SalesOrder {
   id: number;
   customer_name: string;
+  customer_email: string | null;
   customer_address: string | null;
   salesperson: string | null;
   creation_date: string;
@@ -36,6 +37,7 @@ export interface SalesOrderLineCreate {
 
 export interface SalesOrderCreate {
   customer_name: string;
+  customer_email?: string | null;
   customer_address?: string | null;
   salesperson?: string | null;
   lines: SalesOrderLineCreate[];

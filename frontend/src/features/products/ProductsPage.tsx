@@ -1,5 +1,6 @@
 import { Plus, Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,17 @@ export function ProductsPage() {
     setEditing(product);
     setDrawerOpen(true);
   };
+
+  // Voice / deep-link: open the create drawer when navigated with state.create.
+  const location = useLocation();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if ((location.state as { create?: boolean } | null)?.create) {
+      openCreate();
+      navigate(location.pathname, { replace: true, state: null }); // clear so back/refresh won't reopen
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key]);
 
   const count = useMemo(() => data?.length ?? 0, [data]);
 

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import {
+  getExecutiveSummary,
   getInventorySummary,
   getLowStock,
   getManufacturingStats,
@@ -10,6 +11,9 @@ import {
 } from "@/api/dashboard";
 import { listMovements } from "@/api/inventory";
 import { listProducts } from "@/api/products";
+
+export const useExecutiveSummary = () =>
+  useQuery({ queryKey: ["dashboard", "executive-summary"], queryFn: getExecutiveSummary });
 
 export const useInventorySummary = () =>
   useQuery({ queryKey: ["dashboard", "inventory-summary"], queryFn: getInventorySummary });

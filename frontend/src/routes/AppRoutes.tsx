@@ -6,6 +6,8 @@ import { AuditLogsPage } from "@/features/audit/AuditLogsPage";
 import { BomPage } from "@/features/bom/BomPage";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
 import { InventoryPage } from "@/features/inventory/InventoryPage";
+import { InvoiceDetailPage } from "@/features/invoices/InvoiceDetailPage";
+import { InvoiceListPage } from "@/features/invoices/InvoiceListPage";
 import { ManufacturingDetailPage } from "@/features/manufacturing/ManufacturingDetailPage";
 import { ManufacturingPage } from "@/features/manufacturing/ManufacturingPage";
 import { ProductsPage } from "@/features/products/ProductsPage";
@@ -27,6 +29,8 @@ export function AppRoutes() {
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/sales" element={<SalesOrdersPage />} />
           <Route path="/sales/:id" element={<SalesOrderDetailPage />} />
+          <Route path="/invoices" element={<InvoiceListPage />} />
+          <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
           <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
           <Route path="/purchase-orders/:id" element={<PurchaseOrderDetailPage />} />
           <Route path="/bom" element={<BomPage />} />

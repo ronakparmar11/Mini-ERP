@@ -14,6 +14,7 @@ class SalesOrder(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     customer_name: Mapped[str] = mapped_column(String(200), nullable=False)
+    customer_email: Mapped[str | None] = mapped_column(String(200), nullable=True)
     customer_address: Mapped[str | None] = mapped_column(String(500), nullable=True)
     salesperson: Mapped[str | None] = mapped_column(String(120), nullable=True)
     creation_date: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
