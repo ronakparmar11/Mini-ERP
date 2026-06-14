@@ -4,9 +4,11 @@ import { useMemo, useState } from "react";
 import { Badge } from "@/components/common/Badge";
 import { Modal } from "@/components/common/Modal";
 import { PageHeader } from "@/components/common/PageHeader";
+import { Pagination } from "@/components/common/Pagination";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { useAuditLogs } from "@/features/audit/hooks";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { usePagination } from "@/hooks/usePagination";
 import type { AuditLog, AuditModule } from "@/types/audit";
 import { formatDateTime } from "@/utils/format";
 
@@ -40,6 +42,8 @@ export function AuditLogsPage() {
         .some((v) => v!.toLowerCase().includes(search)),
     );
   }, [data, search]);
+
+  const pg = usePagination(rows, { resetKey: `${module}|${search}` });
 
   const columns: Column<AuditLog>[] = [
     {
@@ -104,13 +108,25 @@ export function AuditLogsPage() {
 
         <DataTable
           columns={columns}
-          data={rows}
+          data={pg.pageItems}
           rowKey={(l) => l.id}
           isLoading={isLoading}
           error={error}
           onRetry={() => refetch()}
           onRowClick={(l) => setSelected(l)}
           emptyMessage="No audit entries match these filters."
+        />
+
+        <Pagination
+          page={pg.page}
+          totalPages={pg.totalPages}
+          total={pg.total}
+          from={pg.from}
+          to={pg.to}
+          onPrevious={pg.previousPage}
+          onNext={pg.nextPage}
+          onGoTo={pg.goToPage}
+          noun="entries"
         />
       </div>
 

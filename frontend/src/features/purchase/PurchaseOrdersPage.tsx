@@ -3,11 +3,13 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { PageHeader } from "@/components/common/PageHeader";
+import { Pagination } from "@/components/common/Pagination";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Button } from "@/components/ui/button";
 import { CreatePurchaseOrderDrawer } from "@/features/purchase/CreatePurchaseOrderDrawer";
 import { usePurchaseOrders } from "@/features/purchase/hooks";
+import { usePagination } from "@/hooks/usePagination";
 import { PURCHASE_STATUS_META, formatPoRef } from "@/features/purchase/purchaseUtils";
 import type { PurchaseOrder, PurchaseOrderStatus } from "@/types/purchase";
 import { cn } from "@/utils/cn";
@@ -27,6 +29,7 @@ export function PurchaseOrdersPage() {
   const [filter, setFilter] = useState<PurchaseOrderStatus | "ALL">("ALL");
   const [createOpen, setCreateOpen] = useState(false);
   const { data, isLoading, error, refetch } = usePurchaseOrders(filter === "ALL" ? undefined : filter);
+  const pg = usePagination(data ?? [], { resetKey: filter });
 
   const columns: Column<PurchaseOrder>[] = [
     { id: "ref", header: "PO", width: "100px", cell: (po) => <span className="font-semibold text-primary">{formatPoRef(po.id)}</span> },
@@ -78,13 +81,25 @@ export function PurchaseOrdersPage() {
 
         <DataTable
           columns={columns}
-          data={data}
+          data={pg.pageItems}
           rowKey={(po) => po.id}
           isLoading={isLoading}
           error={error}
           onRetry={() => refetch()}
           onRowClick={(po) => navigate(`/purchase-orders/${po.id}`)}
           emptyMessage="No purchase orders found for this filter."
+        />
+
+        <Pagination
+          page={pg.page}
+          totalPages={pg.totalPages}
+          total={pg.total}
+          from={pg.from}
+          to={pg.to}
+          onPrevious={pg.previousPage}
+          onNext={pg.nextPage}
+          onGoTo={pg.goToPage}
+          noun="orders"
         />
       </div>
 

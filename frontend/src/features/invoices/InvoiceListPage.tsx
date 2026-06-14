@@ -3,10 +3,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { PageHeader } from "@/components/common/PageHeader";
+import { Pagination } from "@/components/common/Pagination";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Button } from "@/components/ui/button";
 import { useInvoices } from "@/features/invoices/hooks";
+import { usePagination } from "@/hooks/usePagination";
 import { INVOICE_STATUS_META, downloadInvoiceFile } from "@/features/invoices/invoiceUtils";
 import type { Invoice, InvoiceStatus } from "@/types/invoice";
 import { cn } from "@/utils/cn";
@@ -22,6 +24,7 @@ export function InvoiceListPage() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<InvoiceStatus | "ALL">("ALL");
   const { data, isLoading, error, refetch } = useInvoices(filter === "ALL" ? undefined : filter);
+  const pg = usePagination(data ?? [], { resetKey: filter });
 
   const columns: Column<Invoice>[] = [
     {
@@ -110,13 +113,25 @@ export function InvoiceListPage() {
 
         <DataTable
           columns={columns}
-          data={data}
+          data={pg.pageItems}
           rowKey={(inv) => inv.id}
           isLoading={isLoading}
           error={error}
           onRetry={() => refetch()}
           onRowClick={(inv) => navigate(`/invoices/${inv.id}`)}
           emptyMessage="No invoices found for this filter."
+        />
+
+        <Pagination
+          page={pg.page}
+          totalPages={pg.totalPages}
+          total={pg.total}
+          from={pg.from}
+          to={pg.to}
+          onPrevious={pg.previousPage}
+          onNext={pg.nextPage}
+          onGoTo={pg.goToPage}
+          noun="invoices"
         />
       </div>
     </div>

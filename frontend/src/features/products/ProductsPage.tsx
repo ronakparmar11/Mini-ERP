@@ -1,9 +1,10 @@
 import { Download, Plus, Search, Upload } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/common/PageHeader";
+import { Pagination } from "@/components/common/Pagination";
 import { Button } from "@/components/ui/button";
 import { exportProducts } from "@/api/products";
 import { ProductDrawer } from "@/features/products/ProductDrawer";
@@ -11,13 +12,14 @@ import { ProductImportDrawer } from "@/features/products/ProductImportDrawer";
 import { ProductsTable } from "@/features/products/ProductsTable";
 import { useProducts } from "@/features/products/hooks";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { usePagination } from "@/hooks/usePagination";
 import { getFriendlyError } from "@/utils/apiError";
 import type { Product } from "@/types/product";
 
 export function ProductsPage() {
   const [searchInput, setSearchInput] = useState("");
   const search = useDebouncedValue(searchInput.trim(), 350);
-  const { data, isLoading, isFetching, error, refetch } = useProducts(search || undefined);
+  const { data, isLoading, error, refetch } = useProducts(search || undefined);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
@@ -51,7 +53,7 @@ export function ProductsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.key]);
 
-  const count = useMemo(() => data?.length ?? 0, [data]);
+  const pg = usePagination(data ?? [], { resetKey: search });
 
   return (
     <div className="space-y-6 p-6 lg:p-8">
@@ -96,20 +98,24 @@ export function ProductsPage() {
         </div>
 
         <ProductsTable
-          data={data}
+          data={pg.pageItems}
           isLoading={isLoading}
           error={error}
           onRetry={() => refetch()}
           onEdit={openEdit}
         />
 
-        {/* Footer count */}
-        <div className="flex items-center justify-between border-t border-outline-variant bg-surface-container-lowest p-3 text-[12px] text-on-surface-variant">
-          <span>
-            {isFetching ? "Refreshing…" : `${count} product${count === 1 ? "" : "s"}`}
-            {search && ` matching "${search}"`}
-          </span>
-        </div>
+        <Pagination
+          page={pg.page}
+          totalPages={pg.totalPages}
+          total={pg.total}
+          from={pg.from}
+          to={pg.to}
+          onPrevious={pg.previousPage}
+          onNext={pg.nextPage}
+          onGoTo={pg.goToPage}
+          noun="products"
+        />
       </div>
 
       <ProductDrawer open={drawerOpen} product={editing} onClose={() => setDrawerOpen(false)} />

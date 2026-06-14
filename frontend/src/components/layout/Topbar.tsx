@@ -1,4 +1,4 @@
-import { Bell, HelpCircle, LogOut, Search, Settings } from "lucide-react";
+import { Bell, LogOut, Search, Settings } from "lucide-react";
 import { useState } from "react";
 
 import { useAuth } from "@/features/auth/AuthContext";
@@ -36,9 +36,6 @@ export function Topbar() {
         </IconButton>
         <IconButton label="Settings">
           <Settings className="h-5 w-5" />
-        </IconButton>
-        <IconButton label="Help">
-          <HelpCircle className="h-5 w-5" />
         </IconButton>
 
         {/* User menu */}

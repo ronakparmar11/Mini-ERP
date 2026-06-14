@@ -1,8 +1,7 @@
-import { Boxes, LifeBuoy, Plus, Settings } from "lucide-react";
+import { Boxes, LifeBuoy, Settings } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 import { NAV_SECTIONS } from "@/components/layout/navItems";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/cn";
 
 export function Sidebar() {
@@ -19,16 +18,8 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Primary action */}
-      <div className="px-4 pt-4">
-        <Button className="w-full" size="lg">
-          <Plus className="h-4 w-4" />
-          New Record
-        </Button>
-      </div>
-
       {/* Navigation */}
-      <nav className="scrollbar-thin mt-4 flex-1 space-y-4 overflow-y-auto px-3 pb-4">
+      <nav className="scrollbar-thin flex-1 space-y-4 overflow-y-auto px-3 pb-4 pt-4">
         {NAV_SECTIONS.map((section, i) => (
           <div key={section.label ?? `top-${i}`} className="space-y-1">
             {section.label && (
@@ -63,10 +54,20 @@ export function Sidebar() {
           <Settings className="h-5 w-5" />
           Settings
         </button>
-        <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-body-md text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface">
+        <NavLink
+          to="/support"
+          className={({ isActive }) =>
+            cn(
+              "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-body-md transition-colors",
+              isActive
+                ? "bg-secondary-container font-semibold text-primary"
+                : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
+            )
+          }
+        >
           <LifeBuoy className="h-5 w-5" />
           Support
-        </button>
+        </NavLink>
       </div>
     </aside>
   );

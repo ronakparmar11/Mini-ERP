@@ -2,12 +2,14 @@ import { Network, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { PageHeader } from "@/components/common/PageHeader";
+import { Pagination } from "@/components/common/Pagination";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Button } from "@/components/ui/button";
 import { BomDetailDrawer } from "@/features/bom/BomDetailDrawer";
 import { CreateBomDrawer } from "@/features/bom/CreateBomDrawer";
 import { useBoms } from "@/features/bom/hooks";
 import { useProducts } from "@/features/products/hooks";
+import { usePagination } from "@/hooks/usePagination";
 import type { BoM } from "@/types/bom";
 import { formatNumber } from "@/utils/format";
 
@@ -17,6 +19,8 @@ export function BomPage() {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [selected, setSelected] = useState<BoM | null>(null);
+
+  const pg = usePagination(data ?? []);
 
   const productName = useMemo(() => {
     const map = new Map((products ?? []).map((p) => [p.id, p.name]));
@@ -68,13 +72,25 @@ export function BomPage() {
       <div className="rounded-xl border border-outline-variant bg-surface shadow-sm">
         <DataTable
           columns={columns}
-          data={data}
+          data={pg.pageItems}
           rowKey={(b) => b.id}
           isLoading={isLoading}
           error={error}
           onRetry={() => refetch()}
           onRowClick={(b) => setSelected(b)}
           emptyMessage="No bills of materials yet. Create one to enable manufacturing."
+        />
+
+        <Pagination
+          page={pg.page}
+          totalPages={pg.totalPages}
+          total={pg.total}
+          from={pg.from}
+          to={pg.to}
+          onPrevious={pg.previousPage}
+          onNext={pg.nextPage}
+          onGoTo={pg.goToPage}
+          noun="bills of materials"
         />
       </div>
 

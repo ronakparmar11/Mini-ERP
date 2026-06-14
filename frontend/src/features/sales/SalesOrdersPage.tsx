@@ -3,11 +3,13 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { PageHeader } from "@/components/common/PageHeader";
+import { Pagination } from "@/components/common/Pagination";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Button } from "@/components/ui/button";
 import { CreateSalesOrderDrawer } from "@/features/sales/CreateSalesOrderDrawer";
 import { useSalesOrders } from "@/features/sales/hooks";
+import { usePagination } from "@/hooks/usePagination";
 import { SALES_STATUS_META, formatSoRef } from "@/features/sales/salesUtils";
 import type { SalesOrder, SalesOrderStatus } from "@/types/sales";
 import { cn } from "@/utils/cn";
@@ -29,6 +31,7 @@ export function SalesOrdersPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const { data, isLoading, error, refetch } = useSalesOrders(filter === "ALL" ? undefined : filter);
+  const pg = usePagination(data ?? [], { resetKey: filter });
 
   // Voice / deep-link: open the create drawer when navigated with state.create.
   useEffect(() => {
@@ -110,13 +113,25 @@ export function SalesOrdersPage() {
 
         <DataTable
           columns={columns}
-          data={data}
+          data={pg.pageItems}
           rowKey={(so) => so.id}
           isLoading={isLoading}
           error={error}
           onRetry={() => refetch()}
           onRowClick={(so) => navigate(`/sales/${so.id}`)}
           emptyMessage="No sales orders found for this filter."
+        />
+
+        <Pagination
+          page={pg.page}
+          totalPages={pg.totalPages}
+          total={pg.total}
+          from={pg.from}
+          to={pg.to}
+          onPrevious={pg.previousPage}
+          onNext={pg.nextPage}
+          onGoTo={pg.goToPage}
+          noun="orders"
         />
       </div>
 

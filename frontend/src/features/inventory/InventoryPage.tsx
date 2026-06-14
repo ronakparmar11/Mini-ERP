@@ -4,10 +4,12 @@ import { Link } from "react-router-dom";
 
 import { MovementBadge } from "@/components/common/MovementBadge";
 import { PageHeader } from "@/components/common/PageHeader";
+import { Pagination } from "@/components/common/Pagination";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { useProducts } from "@/features/products/hooks";
 import { useMovements } from "@/features/inventory/hooks";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { usePagination } from "@/hooks/usePagination";
 import type { InventoryMovement, MovementType, ReferenceType } from "@/types/inventory";
 import { cn } from "@/utils/cn";
 import { formatDateTime, formatNumber } from "@/utils/format";
@@ -47,6 +49,8 @@ export function InventoryPage() {
       return true;
     });
   }, [data, movementType, referenceType, search, productName]);
+
+  const pg = usePagination(rows, { resetKey: `${movementType}|${referenceType}|${search}` });
 
   const columns: Column<InventoryMovement>[] = [
     {
@@ -139,12 +143,24 @@ export function InventoryPage() {
 
         <DataTable
           columns={columns}
-          data={rows}
+          data={pg.pageItems}
           rowKey={(m) => m.id}
           isLoading={isLoading}
           error={error}
           onRetry={() => refetch()}
           emptyMessage="No inventory movements match these filters."
+        />
+
+        <Pagination
+          page={pg.page}
+          totalPages={pg.totalPages}
+          total={pg.total}
+          from={pg.from}
+          to={pg.to}
+          onPrevious={pg.previousPage}
+          onNext={pg.nextPage}
+          onGoTo={pg.goToPage}
+          noun="movements"
         />
       </div>
     </div>
