@@ -18,6 +18,7 @@ from database.session import unit_of_work
 from models.invoice import Invoice, InvoiceLine
 from models.sales import SalesOrder
 from services.audit_service import AuditService
+from services.notification_service import NotificationService
 from utils.config import settings
 from utils.enums import AuditModule, InvoiceStatus, SalesOrderStatus
 from utils.exceptions import BusinessRuleError, NotFoundError
@@ -113,6 +114,17 @@ class InvoiceService:
                           "status": invoice.status,
                           "total_amount": invoice.total_amount},
                 user_id=user_id,
+            )
+            # Notify all admins about the generated invoice.
+            if user_id is not None:
+                from models.user import User
+                user = self.db.get(User, user_id)
+                user_name = user.name if user else "Unknown"
+            else:
+                user_name = "System"
+            NotificationService(self.db).create_for_admins(
+                title="Invoice Generated",
+                message=f"{user_name} generated Invoice {invoice.invoice_number}.",
             )
 
         self.db.refresh(invoice)

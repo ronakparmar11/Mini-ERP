@@ -1,6 +1,7 @@
-import { Bell, LogOut, Search, Settings } from "lucide-react";
+import { LogOut, Search, Settings } from "lucide-react";
 import { useState } from "react";
 
+import { NotificationDropdown } from "@/components/common/NotificationDropdown";
 import { useAuth } from "@/features/auth/AuthContext";
 import { cn } from "@/utils/cn";
 
@@ -31,9 +32,7 @@ export function Topbar() {
       </div>
 
       <div className="ml-auto flex items-center gap-1">
-        <IconButton label="Notifications">
-          <Bell className="h-5 w-5" />
-        </IconButton>
+        <NotificationDropdown />
         <IconButton label="Settings">
           <Settings className="h-5 w-5" />
         </IconButton>

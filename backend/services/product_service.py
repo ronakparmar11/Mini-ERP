@@ -12,6 +12,7 @@ from database.session import unit_of_work
 from models.product import Product
 from schemas.product import ProductCreate, ProductUpdate
 from services.audit_service import AuditService
+from services.notification_service import NotificationService
 from utils.enums import AuditModule
 from utils.exceptions import BusinessRuleError, NotFoundError
 
@@ -61,6 +62,14 @@ class ProductService:
             self.audit.log_creation(
                 module=AuditModule.PRODUCT, record_type="Product",
                 record_id=product.id, snapshot=_snapshot(product), user_id=user_id,
+            )
+            # Notify all admins about the new product.
+            from models.user import User
+            user = self.db.get(User, user_id)
+            user_name = user.name if user else "Unknown"
+            NotificationService(self.db).create_for_admins(
+                title="Product Created",
+                message=f"{user_name} created product '{product.name}'.",
             )
         self.db.refresh(product)
         return product

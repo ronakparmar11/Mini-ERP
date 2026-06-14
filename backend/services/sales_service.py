@@ -21,10 +21,12 @@ from database.session import unit_of_work
 from models.bom import BillOfMaterials
 from models.product import Product
 from models.sales import SalesOrder, SalesOrderLine
+from models.user import User
 from schemas.sales import ConfirmationResult, DeliveryRequest, SalesOrderCreate
 from services.audit_service import AuditService
 from services.inventory_service import InventoryService
 from services.manufacturing_service import ManufacturingService
+from services.notification_service import NotificationService
 from services.purchase_service import PurchaseService
 from utils.enums import (
     AuditModule, MovementType, ProcurementMethod, ReferenceType, SalesOrderStatus,
@@ -80,6 +82,13 @@ class SalesService:
                 record_id=so.id, snapshot={"status": so.status,
                                            "customer_name": so.customer_name},
                 user_id=user_id,
+            )
+            # Notify all admins about the new sales order.
+            user = self.db.get(User, user_id)
+            user_name = user.name if user else "Unknown"
+            NotificationService(self.db).create_for_admins(
+                title="Sales Order Created",
+                message=f"{user_name} created Sales Order {so.id}.",
             )
         self.db.refresh(so)
         return so
@@ -145,6 +154,13 @@ class SalesService:
             # CONFIRMED regardless; procurement covers future supply.
             so.status = SalesOrderStatus.CONFIRMED
             self._audit_status(so, before)
+            # Notify all admins about the confirmation.
+            user = self.db.get(User, user_id)
+            user_name = user.name if user else "Unknown"
+            NotificationService(self.db).create_for_admins(
+                title="Sales Order Confirmed",
+                message=f"{user_name} confirmed Sales Order {so.id}.",
+            )
 
         self.db.refresh(so)
         from schemas.sales import SalesOrderOut
@@ -263,6 +279,13 @@ class SalesService:
             so.status = (SalesOrderStatus.DELIVERED if fully
                          else SalesOrderStatus.PARTIALLY_DELIVERED)
             self._audit_status(so, before)
+            # Notify all admins about the delivery.
+            user = self.db.get(User, user_id)
+            user_name = user.name if user else "Unknown"
+            NotificationService(self.db).create_for_admins(
+                title="Sales Order Delivered",
+                message=f"{user_name} delivered Sales Order {so.id}.",
+            )
         self.db.refresh(so)
         return so
 

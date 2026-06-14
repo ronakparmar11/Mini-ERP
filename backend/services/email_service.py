@@ -19,6 +19,7 @@ from database.session import unit_of_work
 from models.invoice import Invoice
 from services.audit_service import AuditService
 from services.invoice_service import InvoiceService
+from services.notification_service import NotificationService
 from utils.config import settings
 from utils.enums import AuditModule, InvoiceStatus
 from utils.exceptions import BusinessRuleError, NotFoundError, ValidationError
@@ -59,6 +60,17 @@ class EmailService:
                 record_id=invoice.id, before=before,
                 after={"status": invoice.status, "sent_at": invoice.sent_at},
                 user_id=user_id,
+            )
+            # Notify all admins about the sent invoice.
+            if user_id is not None:
+                from models.user import User
+                user = self.db.get(User, user_id)
+                user_name = user.name if user else "Unknown"
+            else:
+                user_name = "System"
+            NotificationService(self.db).create_for_admins(
+                title="Invoice Sent",
+                message=f"{user_name} emailed Invoice {invoice.invoice_number}.",
             )
         self.db.refresh(invoice)
         return invoice
