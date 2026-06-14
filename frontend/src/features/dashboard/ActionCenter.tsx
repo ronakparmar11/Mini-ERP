@@ -1,6 +1,7 @@
 import { AlertTriangle, CheckCircle2, Cog, FileText, ShoppingCart, Truck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import { Badge } from "@/components/common/Badge";
@@ -22,19 +23,14 @@ interface ActionItem {
   to: string;
 }
 
-/**
- * Action Center — opens the dashboard with what needs attention, not passive
- * KPIs. Each card is a prioritized worklist whose rows link straight to the
- * record. Built entirely from existing dashboard + list endpoints.
- */
 export function ActionCenter() {
+  const { t } = useTranslation();
   const pendingPurchases = usePendingPurchases();
   const pendingMfg = usePendingManufacturing();
   const lowStock = useLowStock();
   const sales = useSalesOrders();
   const invoices = useInvoices();
 
-  // Needs Procurement — open POs + MOs not yet in production.
   const needsProcurement = useMemo<ActionItem[]>(() => {
     const pos = (pendingPurchases.data ?? []).map((p) => ({
       key: `po-${p.id}`,
@@ -53,16 +49,14 @@ export function ActionCenter() {
     return [...mos, ...pos];
   }, [pendingPurchases.data, pendingMfg.data]);
 
-  // In Production — MOs currently in progress.
   const inProduction = useMemo<ActionItem[]>(
     () =>
       (pendingMfg.data ?? [])
         .filter((m) => m.status === "IN_PROGRESS")
-        .map((m) => ({ key: `mo-${m.id}`, label: m.reference, sublabel: "In progress", to: `/manufacturing/${m.id}` })),
-    [pendingMfg.data],
+        .map((m) => ({ key: `mo-${m.id}`, label: m.reference, sublabel: t("dashboard.inProgress"), to: `/manufacturing/${m.id}` })),
+    [pendingMfg.data, t],
   );
 
-  // Ready to Deliver — confirmed SOs whose outstanding quantity is fully reserved.
   const readyToDeliver = useMemo<ActionItem[]>(() => {
     return (sales.data ?? [])
       .filter((so) => {
@@ -79,7 +73,6 @@ export function ActionCenter() {
       }));
   }, [sales.data]);
 
-  // Invoices Awaiting Dispatch — generated but not yet emailed (DRAFT).
   const awaitingDispatch = useMemo<ActionItem[]>(
     () =>
       (invoices.data ?? [])
@@ -98,61 +91,59 @@ export function ActionCenter() {
       (lowStock.data ?? []).map((p) => ({
         key: `p-${p.product_id}`,
         label: p.name,
-        sublabel: `${formatNumber(p.free_to_use_qty)} free / ${formatNumber(p.on_hand_qty)} on hand`,
+        sublabel: `${formatNumber(p.free_to_use_qty)} ${t("dashboard.free")} / ${formatNumber(p.on_hand_qty)} ${t("products.onHand").toLowerCase()}`,
         to: "/products",
       })),
-    [lowStock.data],
+    [lowStock.data, t],
   );
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
       <ActionList
-        title="Needs Procurement"
+        title={t("dashboard.needsProcurement")}
         icon={ShoppingCart}
         tone="warning"
         items={needsProcurement}
         isLoading={pendingPurchases.isLoading || pendingMfg.isLoading}
-        emptyMessage="No open purchase or manufacturing orders."
+        emptyMessage={t("dashboard.noProcurementOrders")}
       />
       <ActionList
-        title="In Production"
+        title={t("dashboard.inProduction")}
         icon={Cog}
         tone="primary"
         items={inProduction}
         isLoading={pendingMfg.isLoading}
-        emptyMessage="Nothing in production right now."
+        emptyMessage={t("dashboard.nothingInProduction")}
       />
       <ActionList
-        title="Ready to Deliver"
+        title={t("dashboard.readyToDeliver")}
         icon={Truck}
         tone="success"
         items={readyToDeliver}
         isLoading={sales.isLoading}
-        emptyMessage="No orders are fully reserved yet."
+        emptyMessage={t("dashboard.noOrdersFullyReserved")}
       />
       <ActionList
-        title="Invoices Awaiting Dispatch"
+        title={t("dashboard.invoicesAwaitingDispatch")}
         icon={FileText}
         tone="info"
         items={awaitingDispatch}
         isLoading={invoices.isLoading}
-        emptyMessage="No draft invoices awaiting dispatch."
+        emptyMessage={t("dashboard.noDraftInvoices")}
       />
       <ActionList
-        title="Low Stock Alerts"
+        title={t("dashboard.lowStockAlerts")}
         icon={AlertTriangle}
         tone="danger"
         items={lowStockItems}
         isLoading={lowStock.isLoading}
-        emptyMessage="All products are above threshold."
+        emptyMessage={t("dashboard.allProductsAboveThreshold")}
       />
     </div>
   );
 }
 
-/** Max records shown per queue before collapsing into a "+X more" row. */
 const MAX_VISIBLE = 3;
-/** Fixed body height so every Action Center card shares an identical height. */
 const BODY_HEIGHT = "h-[184px]";
 
 function ActionList({
@@ -170,6 +161,7 @@ function ActionList({
   isLoading?: boolean;
   emptyMessage: string;
 }) {
+  const { t } = useTranslation();
   const visible = items.slice(0, MAX_VISIBLE);
   const extra = items.length - visible.length;
 
@@ -187,12 +179,12 @@ function ActionList({
     >
       {isLoading ? (
         <div className="flex flex-1 items-center justify-center">
-          <p className="text-body-sm text-on-surface-variant">Loading…</p>
+          <p className="text-body-sm text-on-surface-variant">{t("common.loading")}</p>
         </div>
       ) : items.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-1 px-4 text-center">
           <CheckCircle2 className="h-6 w-6 text-tertiary-container" />
-          <p className="text-body-md font-semibold text-on-surface">All caught up</p>
+          <p className="text-body-md font-semibold text-on-surface">{t("common.allCaughtUp")}</p>
           <p className="text-[11px] text-on-surface-variant">{emptyMessage}</p>
         </div>
       ) : (
@@ -217,7 +209,7 @@ function ActionList({
           {extra > 0 && (
             <li>
               <span className="block px-3 py-1 text-[11px] font-medium text-on-surface-variant">
-                +{extra} more
+                +{extra} {t("common.loading").replace("…", "")}
               </span>
             </li>
           )}

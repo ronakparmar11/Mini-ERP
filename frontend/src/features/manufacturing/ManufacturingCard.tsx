@@ -1,4 +1,5 @@
 import { CalendarDays, ReceiptText } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import type { ManufacturingOrder, ManufacturingOrderStatus } from "@/types/manufacturing";
 import { cn } from "@/utils/cn";
@@ -24,6 +25,8 @@ interface ManufacturingCardProps {
 }
 
 export function ManufacturingCard({ mo, productName, onClick }: ManufacturingCardProps) {
+  const { t } = useTranslation();
+
   return (
     <button
       onClick={onClick}
@@ -41,7 +44,7 @@ export function ManufacturingCard({ mo, productName, onClick }: ManufacturingCar
         {productName(mo.finished_product_id)}
       </h4>
       <p className="mb-3 text-body-sm text-on-surface-variant">
-        Qty: {formatNumber(mo.quantity_to_produce)} units
+        {t("manufacturing.qty")}: {formatNumber(mo.quantity_to_produce)} {t("manufacturing.units")}
       </p>
 
       {mo.source_sales_order_id != null && (
@@ -62,7 +65,7 @@ export function ManufacturingCard({ mo, productName, onClick }: ManufacturingCar
             {initials(mo.assignee)}
           </span>
         ) : (
-          <span className="text-[11px] text-on-surface-variant">Unassigned</span>
+          <span className="text-[11px] text-on-surface-variant">{t("manufacturing.unassigned")}</span>
         )}
         {mo.schedule_date ? (
           <span className="flex items-center gap-1 rounded-full bg-surface-container-high px-2 py-0.5 text-[11px] text-on-surface-variant">
@@ -70,7 +73,7 @@ export function ManufacturingCard({ mo, productName, onClick }: ManufacturingCar
             {formatDateTime(mo.schedule_date)}
           </span>
         ) : (
-          <span className="text-[11px] text-on-surface-variant">No deadline</span>
+          <span className="text-[11px] text-on-surface-variant">{t("manufacturing.noDeadline")}</span>
         )}
       </div>
     </button>

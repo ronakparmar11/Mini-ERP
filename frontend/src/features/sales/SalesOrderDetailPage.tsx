@@ -1,5 +1,6 @@
 import { ArrowRight, Building2, ChevronRight, Truck, Warehouse } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -27,6 +28,7 @@ import { getApiErrorMessage } from "@/utils/apiError";
 import { formatCurrency, formatDateTime, formatNumber } from "@/utils/format";
 
 export function SalesOrderDetailPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const id = Number(params.id);
   const navigate = useNavigate();
@@ -45,7 +47,6 @@ export function SalesOrderDetailPage() {
   const [showDeliver, setShowDeliver] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
 
-  // Orders auto-generated for (or otherwise linked to) this sales order.
   const linkedMos = useMemo(
     () => (allMos ?? []).filter((m) => m.source_sales_order_id === id && m.status !== "CANCELLED"),
     [allMos, id],
@@ -100,7 +101,7 @@ export function SalesOrderDetailPage() {
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <nav className="flex items-center gap-2 text-body-sm text-on-surface-variant">
           <Link to="/sales" className="hover:text-primary">
-            Sales
+            {t("sales.sales")}
           </Link>
           <ChevronRight className="h-4 w-4" />
           <span className="font-semibold text-on-surface">{formatSoRef(order.id)}</span>
@@ -108,24 +109,23 @@ export function SalesOrderDetailPage() {
         <div className="flex items-center gap-2">
           {canCancel && (
             <Button variant="ghost" size="sm" className="text-error" onClick={() => setShowCancel(true)}>
-              Cancel Order
+              {t("sales.cancelOrder")}
             </Button>
           )}
           {canConfirm && (
             <Button size="sm" onClick={onConfirm} disabled={confirmMut.isPending}>
-              {confirmMut.isPending ? "Confirming…" : "Confirm Order"}
+              {confirmMut.isPending ? t("sales.confirming") : t("sales.confirmOrder")}
             </Button>
           )}
           {canDeliver && (
             <Button size="sm" onClick={() => setShowDeliver(true)}>
               <Truck className="h-4 w-4" />
-              Deliver
+              {t("sales.deliver")}
             </Button>
           )}
         </div>
       </div>
 
-      {/* Persistent confirmation outcome (survives closing the result dialog) */}
       {confirmResult && !bannerDismissed && (
         <ConfirmationBanner result={confirmResult} onDismiss={() => setBannerDismissed(true)} />
       )}
@@ -148,10 +148,10 @@ export function SalesOrderDetailPage() {
             )}
           </div>
           <div className="flex flex-col gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest p-4 md:border-none md:bg-transparent md:p-0 md:text-right">
-            <Row label="Order Date" value={formatDateTime(order.creation_date)} />
-            <Row label="Salesperson" value={order.salesperson ?? "—"} />
+            <Row label={t("sales.orderDateLabel")} value={formatDateTime(order.creation_date)} />
+            <Row label={t("sales.salespersonLabel")} value={order.salesperson ?? "—"} />
             <div className="flex justify-between gap-8 md:justify-end">
-              <span className="text-body-sm text-on-surface-variant">Total Amount:</span>
+              <span className="text-body-sm text-on-surface-variant">{t("sales.totalAmount")}</span>
               <span className="text-title-sm font-bold text-primary">
                 {formatCurrency(order.total_amount)}
               </span>
@@ -161,7 +161,7 @@ export function SalesOrderDetailPage() {
 
         {/* Lifecycle */}
         <div className="border-b border-outline-variant bg-surface-container-lowest p-6 md:p-8">
-          <h3 className="mb-6 text-label-upper uppercase text-on-surface-variant">Order Lifecycle</h3>
+          <h3 className="mb-6 text-label-upper uppercase text-on-surface-variant">{t("sales.orderLifecycle")}</h3>
           <OrderLifecycle status={order.status} />
         </div>
 
@@ -173,9 +173,9 @@ export function SalesOrderDetailPage() {
                 <Warehouse className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="text-title-sm text-on-surface">Inventory Reserved</h4>
+                <h4 className="text-title-sm text-on-surface">{t("sales.inventoryReserved")}</h4>
                 <p className="text-body-sm text-on-surface-variant">
-                  Stock is committed to this order until delivery.
+                  {t("sales.stockCommitted")}
                 </p>
               </div>
             </div>
@@ -183,7 +183,7 @@ export function SalesOrderDetailPage() {
               onClick={() => navigate("/inventory")}
               className="flex items-center gap-1 text-body-sm font-semibold text-primary hover:underline"
             >
-              View Stock Moves
+              {t("sales.viewStockMoves")}
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
@@ -194,12 +194,12 @@ export function SalesOrderDetailPage() {
           <table className="w-full border-collapse text-left">
             <thead>
               <tr className="border-b border-outline-variant bg-surface-container-lowest">
-                <th className="px-6 py-3 text-label-upper uppercase text-on-surface-variant">Product</th>
-                <th className="px-6 py-3 text-right text-label-upper uppercase text-on-surface-variant">Ordered</th>
-                <th className="px-6 py-3 text-right text-label-upper uppercase text-on-surface-variant">Delivered</th>
-                <th className="px-6 py-3 text-right text-label-upper uppercase text-on-surface-variant">Remaining</th>
-                <th className="px-6 py-3 text-right text-label-upper uppercase text-on-surface-variant">Unit Price</th>
-                <th className="px-6 py-3 text-right text-label-upper uppercase text-on-surface-variant">Subtotal</th>
+                <th className="px-6 py-3 text-label-upper uppercase text-on-surface-variant">{t("common.product")}</th>
+                <th className="px-6 py-3 text-right text-label-upper uppercase text-on-surface-variant">{t("sales.ordered")}</th>
+                <th className="px-6 py-3 text-right text-label-upper uppercase text-on-surface-variant">{t("sales.deliveredQty")}</th>
+                <th className="px-6 py-3 text-right text-label-upper uppercase text-on-surface-variant">{t("sales.remaining")}</th>
+                <th className="px-6 py-3 text-right text-label-upper uppercase text-on-surface-variant">{t("common.unitPrice")}</th>
+                <th className="px-6 py-3 text-right text-label-upper uppercase text-on-surface-variant">{t("common.subtotal")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant text-table-data text-on-surface">
@@ -221,7 +221,7 @@ export function SalesOrderDetailPage() {
             <tfoot className="border-t-2 border-outline-variant bg-surface-container-lowest">
               <tr>
                 <td className="px-6 py-4" colSpan={4} />
-                <td className="px-6 py-3 text-right text-body-sm text-on-surface-variant">Total:</td>
+                <td className="px-6 py-3 text-right text-body-sm text-on-surface-variant">{t("sales.totalLabel")}</td>
                 <td className="px-6 py-3 text-right text-title-sm font-bold text-primary">
                   {formatCurrency(order.total_amount)}
                 </td>
@@ -231,7 +231,6 @@ export function SalesOrderDetailPage() {
         </div>
       </div>
 
-      {/* Fulfillment & next steps */}
       <FulfillmentPanel
         order={order}
         linkedPurchaseOrders={linkedPos}
@@ -243,7 +242,6 @@ export function SalesOrderDetailPage() {
         onDeliver={() => setShowDeliver(true)}
       />
 
-      {/* Invoice & billing (assisted Order-to-Cash) — only once fulfilled */}
       {order.status === "DELIVERED" && <InvoiceBillingPanel salesOrderId={order.id} />}
 
       {/* Dialogs */}
@@ -252,22 +250,21 @@ export function SalesOrderDetailPage() {
       <Modal
         open={showCancel}
         onClose={() => setShowCancel(false)}
-        title="Cancel Sales Order"
+        title={t("sales.cancelSalesOrderTitle")}
         description={`This will cancel ${formatSoRef(order.id)} and release outstanding reservations.`}
         footer={
           <>
             <Button variant="secondary" size="sm" onClick={() => setShowCancel(false)}>
-              Keep Order
+              {t("sales.keepOrder")}
             </Button>
             <Button variant="destructive" size="sm" onClick={onCancel} disabled={cancelMut.isPending}>
-              {cancelMut.isPending ? "Cancelling…" : "Cancel Order"}
+              {cancelMut.isPending ? t("sales.cancelling") : t("sales.cancelOrder")}
             </Button>
           </>
         }
       >
         <p className="text-body-sm text-on-surface-variant">
-          Auto-generated Purchase/Manufacturing orders are not unwound automatically and must be
-          cancelled separately if needed.
+          {t("sales.cancelSalesOrderNote")}
         </p>
       </Modal>
     </div>

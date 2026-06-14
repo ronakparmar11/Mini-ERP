@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -31,6 +32,7 @@ interface LineDraft {
 const newLine = (): LineDraft => ({ key: crypto.randomUUID(), product_id: "", ordered_quantity: "1", cost_price: "" });
 
 export function CreatePurchaseOrderDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data: products, isLoading: loadingProducts } = useProducts();
   const createMut = useCreatePurchaseOrder();
@@ -63,7 +65,7 @@ export function CreatePurchaseOrderDrawer({ open, onClose }: { open: boolean; on
   const onSubmit = handleSubmit(async (vals) => {
     const valid = lines.filter((l) => l.product_id !== "" && Number(l.ordered_quantity) > 0);
     if (valid.length === 0) {
-      setLineError("Add at least one line with a product and quantity greater than zero.");
+      setLineError(t("sales.addAtLeastOneLine"));
       return;
     }
     setLineError(null);
@@ -87,9 +89,9 @@ export function CreatePurchaseOrderDrawer({ open, onClose }: { open: boolean; on
   });
 
   return (
-    <DrawerShell open={open} onClose={onClose} label="New Purchase Order">
+    <DrawerShell open={open} onClose={onClose} label={t("purchase.newPurchaseOrder")}>
         <div className="flex items-center justify-between border-b border-outline-variant p-4">
-          <h3 className="text-title-sm text-on-background">New Purchase Order</h3>
+          <h3 className="text-title-sm text-on-background">{t("purchase.newPurchaseOrder")}</h3>
           <button onClick={onClose} className="rounded-full p-1 text-on-surface-variant hover:bg-surface-container">
             <X className="h-5 w-5" />
           </button>
@@ -97,23 +99,23 @@ export function CreatePurchaseOrderDrawer({ open, onClose }: { open: boolean; on
 
         <form id="po-form" onSubmit={onSubmit} className="flex-1 space-y-6 overflow-y-auto p-4">
           <div className="space-y-4">
-            <h4 className="border-b border-outline-variant pb-1 text-label-upper uppercase text-on-surface-variant">Vendor</h4>
+            <h4 className="border-b border-outline-variant pb-1 text-label-upper uppercase text-on-surface-variant">{t("purchase.vendorSection")}</h4>
             <div>
-              <Label htmlFor="vendor">Vendor</Label>
+              <Label htmlFor="vendor">{t("purchase.vendorLabel")}</Label>
               <Input id="vendor" {...register("vendor")} placeholder="e.g. Acme Supplies" />
               {errors.vendor && <p className="mt-1 text-body-sm text-error">{errors.vendor.message}</p>}
             </div>
             <div>
-              <Label htmlFor="responsible_person">Responsible Person (optional)</Label>
+              <Label htmlFor="responsible_person">{t("purchase.responsiblePerson")}</Label>
               <Input id="responsible_person" {...register("responsible_person")} />
             </div>
           </div>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between border-b border-outline-variant pb-1">
-              <h4 className="text-label-upper uppercase text-on-surface-variant">Lines</h4>
+              <h4 className="text-label-upper uppercase text-on-surface-variant">{t("purchase.linesSection")}</h4>
               <button type="button" onClick={() => setLines((l) => [...l, newLine()])} className="flex items-center gap-1 text-body-sm font-semibold text-primary hover:underline">
-                <Plus className="h-4 w-4" /> Add line
+                <Plus className="h-4 w-4" /> {t("purchase.addLine")}
               </button>
             </div>
             {lines.map((l) => {
@@ -129,7 +131,7 @@ export function CreatePurchaseOrderDrawer({ open, onClose }: { open: boolean; on
                       }}
                       className="mr-2 block w-full rounded-lg border border-outline-variant bg-surface px-3 py-2 text-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
                     >
-                      <option value="" disabled>{loadingProducts ? "Loading…" : "Select product…"}</option>
+                      <option value="" disabled>{loadingProducts ? t("common.loading") : t("common.selectProduct")}</option>
                       {(products ?? []).map((p) => (
                         <option key={p.id} value={p.id}>{p.name}</option>
                       ))}
@@ -140,11 +142,11 @@ export function CreatePurchaseOrderDrawer({ open, onClose }: { open: boolean; on
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="mb-1 block text-[11px] text-on-surface-variant">Quantity</label>
-                      <Input type="number" min="0" step="0.001" value={l.ordered_quantity} onChange={(e) => patch(l.key, { ordered_quantity: e.target.value })} className="py-2" />
+                      <label className="mb-1 block text-[11px] text-on-surface-variant">{t("purchase.quantityLabel")}</label>
+                      <Input type="number" min="0" step="1" value={l.ordered_quantity} onChange={(e) => patch(l.key, { ordered_quantity: e.target.value })} className="py-2" />
                     </div>
                     <div>
-                      <label className="mb-1 block text-[11px] text-on-surface-variant">Cost Price</label>
+                      <label className="mb-1 block text-[11px] text-on-surface-variant">{t("purchase.costPriceLabel")}</label>
                       <Input type="number" min="0" step="0.01" value={l.cost_price} onChange={(e) => patch(l.key, { cost_price: e.target.value })} className="py-2" />
                     </div>
                   </div>
@@ -160,12 +162,12 @@ export function CreatePurchaseOrderDrawer({ open, onClose }: { open: boolean; on
 
         <div className="flex items-center justify-between gap-2 border-t border-outline-variant bg-surface p-4">
           <div className="text-body-sm text-on-surface-variant">
-            Est. total <span className="font-semibold text-on-surface">{formatCurrency(estTotal)}</span>
+            {t("purchase.estimatedTotal")} <span className="font-semibold text-on-surface">{formatCurrency(estTotal)}</span>
           </div>
           <div className="flex gap-2">
-            <Button variant="secondary" size="sm" onClick={onClose}>Cancel</Button>
+            <Button variant="secondary" size="sm" onClick={onClose}>{t("common.cancel")}</Button>
             <Button type="submit" form="po-form" size="sm" disabled={createMut.isPending}>
-              {createMut.isPending ? "Creating…" : "Create PO"}
+              {createMut.isPending ? t("purchase.creating") : t("purchase.createPo")}
             </Button>
           </div>
         </div>

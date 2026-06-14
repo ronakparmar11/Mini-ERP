@@ -1,5 +1,6 @@
 import { Bell } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "@/utils/cn";
 import {
@@ -35,6 +36,7 @@ export function NotificationDropdown() {
   const { data: notifications = [] } = useNotifications();
   const { data: unreadData } = useUnreadNotificationCount();
   const markRead = useMarkNotificationRead();
+  const { t } = useTranslation();
 
   const unreadCount = unreadData?.count ?? 0;
 
@@ -55,8 +57,8 @@ export function NotificationDropdown() {
       {/* Bell button — reuses existing IconButton styling from Topbar */}
       <button
         id="notification-bell"
-        aria-label="Notifications"
-        title="Notifications"
+        aria-label={t("topbar.notifications")}
+        title={t("topbar.notifications")}
         onClick={() => setOpen((v) => !v)}
         className="relative flex h-10 w-10 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface"
       >
@@ -74,7 +76,7 @@ export function NotificationDropdown() {
           {/* Header */}
           <div className="border-b border-outline-variant/40 px-4 py-3">
             <h3 className="text-body-md font-semibold text-on-surface">
-              Notifications
+              {t("topbar.notifications")}
             </h3>
           </div>
 

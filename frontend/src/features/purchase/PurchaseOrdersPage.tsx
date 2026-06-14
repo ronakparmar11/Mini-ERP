@@ -1,5 +1,6 @@
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { PageHeader } from "@/components/common/PageHeader";
@@ -15,27 +16,28 @@ import type { PurchaseOrder, PurchaseOrderStatus } from "@/types/purchase";
 import { cn } from "@/utils/cn";
 import { formatCurrency, formatDateTime } from "@/utils/format";
 
-const FILTERS: { label: string; value: PurchaseOrderStatus | "ALL" }[] = [
-  { label: "All", value: "ALL" },
-  { label: "Draft", value: "DRAFT" },
-  { label: "Confirmed", value: "CONFIRMED" },
-  { label: "Partially Received", value: "PARTIALLY_RECEIVED" },
-  { label: "Received", value: "RECEIVED" },
-  { label: "Cancelled", value: "CANCELLED" },
-];
-
 export function PurchaseOrdersPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [filter, setFilter] = useState<PurchaseOrderStatus | "ALL">("ALL");
   const [createOpen, setCreateOpen] = useState(false);
   const { data, isLoading, error, refetch } = usePurchaseOrders(filter === "ALL" ? undefined : filter);
   const pg = usePagination(data ?? [], { resetKey: filter });
 
+  const FILTERS: { label: string; value: PurchaseOrderStatus | "ALL" }[] = [
+    { label: t("purchase.filterAll"), value: "ALL" },
+    { label: t("purchase.filterDraft"), value: "DRAFT" },
+    { label: t("purchase.filterConfirmed"), value: "CONFIRMED" },
+    { label: t("purchase.filterPartiallyReceived"), value: "PARTIALLY_RECEIVED" },
+    { label: t("purchase.filterReceived"), value: "RECEIVED" },
+    { label: t("purchase.filterCancelled"), value: "CANCELLED" },
+  ];
+
   const columns: Column<PurchaseOrder>[] = [
-    { id: "ref", header: "PO", width: "100px", cell: (po) => <span className="font-semibold text-primary">{formatPoRef(po.id)}</span> },
+    { id: "ref", header: t("purchase.po"), width: "100px", cell: (po) => <span className="font-semibold text-primary">{formatPoRef(po.id)}</span> },
     {
       id: "vendor",
-      header: "Vendor",
+      header: t("purchase.vendor"),
       cell: (po) => (
         <div>
           <div className="font-medium text-on-surface">{po.vendor}</div>
@@ -45,20 +47,20 @@ export function PurchaseOrdersPage() {
         </div>
       ),
     },
-    { id: "date", header: "Creation Date", cell: (po) => <span className="text-on-surface-variant">{formatDateTime(po.creation_date)}</span> },
-    { id: "status", header: "Status", cell: (po) => <StatusBadge meta={PURCHASE_STATUS_META[po.status]} /> },
-    { id: "total", header: "Total", align: "right", cell: (po) => <span className="font-semibold">{formatCurrency(po.total_amount)}</span> },
+    { id: "date", header: t("purchase.creationDate"), cell: (po) => <span className="text-on-surface-variant">{formatDateTime(po.creation_date)}</span> },
+    { id: "status", header: t("common.status"), cell: (po) => <StatusBadge meta={PURCHASE_STATUS_META[po.status]} /> },
+    { id: "total", header: t("common.total"), align: "right", cell: (po) => <span className="font-semibold">{formatCurrency(po.total_amount)}</span> },
   ];
 
   return (
     <div className="space-y-6 p-6 lg:p-8">
       <PageHeader
-        title="Purchase Orders"
-        subtitle="Procure stock from vendors and receive goods into inventory."
+        title={t("purchase.title")}
+        subtitle={t("purchase.subtitle")}
         actions={
           <Button onClick={() => setCreateOpen(true)}>
             <Plus className="h-4 w-4" />
-            New Purchase Order
+            {t("purchase.newPurchaseOrder")}
           </Button>
         }
       />
@@ -87,7 +89,7 @@ export function PurchaseOrdersPage() {
           error={error}
           onRetry={() => refetch()}
           onRowClick={(po) => navigate(`/purchase-orders/${po.id}`)}
-          emptyMessage="No purchase orders found for this filter."
+          emptyMessage={t("purchase.noOrdersFound")}
         />
 
         <Pagination
@@ -99,7 +101,7 @@ export function PurchaseOrdersPage() {
           onPrevious={pg.previousPage}
           onNext={pg.nextPage}
           onGoTo={pg.goToPage}
-          noun="orders"
+          noun={t("purchase.noun")}
         />
       </div>
 

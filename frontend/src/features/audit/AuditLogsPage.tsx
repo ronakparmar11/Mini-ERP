@@ -1,5 +1,6 @@
 import { ArrowRight, Search } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Badge } from "@/components/common/Badge";
 import { Modal } from "@/components/common/Modal";
@@ -27,6 +28,7 @@ const selectClass =
   "rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-body-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30";
 
 export function AuditLogsPage() {
+  const { t } = useTranslation();
   const [module, setModule] = useState<AuditModule | "ALL">("ALL");
   const { data, isLoading, error, refetch } = useAuditLogs(module === "ALL" ? undefined : module);
 
@@ -48,18 +50,22 @@ export function AuditLogsPage() {
   const columns: Column<AuditLog>[] = [
     {
       id: "timestamp",
-      header: "Timestamp",
+      header: t("audit.timestamp"),
       cell: (l) => <span className="text-on-surface-variant">{formatDateTime(l.timestamp)}</span>,
     },
     {
       id: "user",
-      header: "User",
-      cell: (l) => <span>{l.user_id != null ? `User #${l.user_id}` : "System"}</span>,
+      header: t("audit.user"),
+      cell: (l) => <span>{l.user_id != null ? `User #${l.user_id}` : t("audit.system")}</span>,
     },
-    { id: "module", header: "Module", cell: (l) => <Badge tone={MODULE_TONE[l.module]}>{l.module.replace("_", " ")}</Badge> },
+    {
+      id: "module",
+      header: t("audit.module"),
+      cell: (l) => <Badge tone={MODULE_TONE[l.module]}>{l.module.replace("_", " ")}</Badge>,
+    },
     {
       id: "action",
-      header: "Action",
+      header: t("audit.action"),
       cell: (l) => (
         <span className="text-on-surface">
           <span className="font-medium">{l.field_name}</span>{" "}
@@ -71,7 +77,7 @@ export function AuditLogsPage() {
     },
     {
       id: "entity",
-      header: "Entity",
+      header: t("audit.entity"),
       cell: (l) => (
         <span className="text-on-surface-variant">
           {l.record_type} #{l.record_id}
@@ -82,7 +88,7 @@ export function AuditLogsPage() {
 
   return (
     <div className="space-y-6 p-6 lg:p-8">
-      <PageHeader title="Audit Logs" subtitle="Field-level history of every tracked change across the ERP." />
+      <PageHeader title={t("audit.title")} subtitle={t("audit.subtitle")} />
 
       <div className="flex flex-col rounded-xl border border-outline-variant bg-surface shadow-sm">
         <div className="flex flex-wrap items-center gap-3 border-b border-outline-variant p-3">
@@ -91,19 +97,25 @@ export function AuditLogsPage() {
             <input
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search field, value, entity…"
+              placeholder={t("audit.searchPlaceholder")}
               className="w-full rounded-lg border border-outline-variant bg-surface-container-low py-2 pl-10 pr-3 text-body-md text-on-surface placeholder:text-outline focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
-          <select className={selectClass} value={module} onChange={(e) => setModule(e.target.value as AuditModule | "ALL")}>
-            <option value="ALL">All modules</option>
+          <select
+            className={selectClass}
+            value={module}
+            onChange={(e) => setModule(e.target.value as AuditModule | "ALL")}
+          >
+            <option value="ALL">{t("audit.allModules")}</option>
             {MODULES.map((m) => (
               <option key={m} value={m}>
                 {m.replace("_", " ")}
               </option>
             ))}
           </select>
-          <span className="ml-auto px-1 text-[12px] text-on-surface-variant">{rows.length} entries</span>
+          <span className="ml-auto px-1 text-[12px] text-on-surface-variant">
+            {t("audit.entriesCount", { count: rows.length })}
+          </span>
         </div>
 
         <DataTable
@@ -114,7 +126,7 @@ export function AuditLogsPage() {
           error={error}
           onRetry={() => refetch()}
           onRowClick={(l) => setSelected(l)}
-          emptyMessage="No audit entries match these filters."
+          emptyMessage={t("audit.noEntries")}
         />
 
         <Pagination
@@ -126,21 +138,27 @@ export function AuditLogsPage() {
           onPrevious={pg.previousPage}
           onNext={pg.nextPage}
           onGoTo={pg.goToPage}
-          noun="entries"
+          noun={t("audit.noun")}
         />
       </div>
 
       <Modal
         open={selected !== null}
         onClose={() => setSelected(null)}
-        title="Change Detail"
-        description={selected ? `${selected.record_type} #${selected.record_id} • ${selected.module.replace("_", " ")}` : ""}
+        title={t("audit.changeDetail")}
+        description={
+          selected
+            ? `${selected.record_type} #${selected.record_id} • ${selected.module.replace("_", " ")}`
+            : ""
+        }
       >
         {selected && (
           <div className="space-y-4">
-            <Field label="Field">{selected.field_name}</Field>
-            <Field label="User">{selected.user_id != null ? `User #${selected.user_id}` : "System"}</Field>
-            <Field label="When">{formatDateTime(selected.timestamp)}</Field>
+            <Field label={t("audit.field")}>{selected.field_name}</Field>
+            <Field label={t("audit.user")}>
+              {selected.user_id != null ? `User #${selected.user_id}` : t("audit.system")}
+            </Field>
+            <Field label={t("audit.when")}>{formatDateTime(selected.timestamp)}</Field>
             <div className="flex items-center gap-3 rounded-lg border border-outline-variant bg-surface-container-low p-3">
               <code className="flex-1 break-all text-body-sm text-on-surface-variant line-through">
                 {selected.old_value ?? "—"}

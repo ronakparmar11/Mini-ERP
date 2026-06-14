@@ -113,7 +113,7 @@ export function DeliverDialog({ open, onClose, order, productName }: DeliverDial
               <Input
                 type="number"
                 min="0"
-                step="0.001"
+                step="1"
                 value={qty[l.id] ?? ""}
                 onChange={(e) => setQty((prev) => ({ ...prev, [l.id]: e.target.value }))}
                 className="w-28 py-2 text-right"

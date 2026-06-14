@@ -1,5 +1,6 @@
 import { Download, Plus, Search, Upload } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -17,6 +18,7 @@ import { getFriendlyError } from "@/utils/apiError";
 import type { Product } from "@/types/product";
 
 export function ProductsPage() {
+  const { t } = useTranslation();
   const [searchInput, setSearchInput] = useState("");
   const search = useDebouncedValue(searchInput.trim(), 350);
   const { data, isLoading, error, refetch } = useProducts(search || undefined);
@@ -48,7 +50,7 @@ export function ProductsPage() {
   useEffect(() => {
     if ((location.state as { create?: boolean } | null)?.create) {
       openCreate();
-      navigate(location.pathname, { replace: true, state: null }); // clear so back/refresh won't reopen
+      navigate(location.pathname, { replace: true, state: null });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.key]);
@@ -58,21 +60,21 @@ export function ProductsPage() {
   return (
     <div className="space-y-6 p-6 lg:p-8">
       <PageHeader
-        title="Products"
-        subtitle="Manage inventory, monitor stock levels, and configure procurement strategies."
+        title={t("products.title")}
+        subtitle={t("products.subtitle")}
         actions={
           <>
             <Button variant="secondary" size="sm" onClick={onExport}>
               <Download className="h-4 w-4" />
-              Export Excel
+              {t("products.exportExcel")}
             </Button>
             <Button variant="secondary" size="sm" onClick={() => setImportOpen(true)}>
               <Upload className="h-4 w-4" />
-              Import Excel
+              {t("products.importExcel")}
             </Button>
             <Button onClick={openCreate}>
               <Plus className="h-4 w-4" />
-              New Product
+              {t("products.newProduct")}
             </Button>
           </>
         }
@@ -86,14 +88,14 @@ export function ProductsPage() {
             <input
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search products…"
+              placeholder={t("products.searchPlaceholder")}
               className="w-full rounded-lg border border-outline-variant bg-surface-container-low py-2 pl-10 pr-3 text-body-md text-on-surface placeholder:text-outline focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
           <div className="flex items-center gap-4 px-1 text-[12px] text-on-surface-variant">
-            <Legend className="bg-tertiary-container" label="In Stock" />
-            <Legend className="bg-[#f59e0b]" label="Low" />
-            <Legend className="bg-error" label="Out" />
+            <Legend className="bg-tertiary-container" label={t("products.inStock")} />
+            <Legend className="bg-[#f59e0b]" label={t("products.low")} />
+            <Legend className="bg-error" label={t("products.out")} />
           </div>
         </div>
 
@@ -114,7 +116,7 @@ export function ProductsPage() {
           onPrevious={pg.previousPage}
           onNext={pg.nextPage}
           onGoTo={pg.goToPage}
-          noun="products"
+          noun={t("products.noun")}
         />
       </div>
 

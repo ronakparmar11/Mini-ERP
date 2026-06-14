@@ -1,6 +1,6 @@
 /** Shared display formatters. Backend returns plain numbers/ISO strings. */
 
-const numberFmt = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
+const numberFmt = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 const currencyFmt = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",

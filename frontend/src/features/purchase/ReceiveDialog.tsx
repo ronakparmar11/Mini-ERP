@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { InlineAlert } from "@/components/common/InlineAlert";
@@ -18,6 +19,7 @@ interface ReceiveDialogProps {
 }
 
 export function ReceiveDialog({ open, onClose, order, productName }: ReceiveDialogProps) {
+  const { t } = useTranslation();
   const receiveMut = useReceivePurchaseOrder(order.id);
   const pending = order.lines.filter((l) => l.remaining_to_receive > 0);
   const [qty, setQty] = useState<Record<number, string>>({});
@@ -65,23 +67,23 @@ export function ReceiveDialog({ open, onClose, order, productName }: ReceiveDial
     <Modal
       open={open}
       onClose={onClose}
-      title="Receive Goods"
-      description="Receiving increases on-hand stock and logs an inventory movement."
+      title={t("purchase.receiveGoods")}
+      description={t("purchase.receiveGoodsDesc")}
       footer={
         <>
-          <Button variant="secondary" size="sm" onClick={onClose}>Cancel</Button>
+          <Button variant="secondary" size="sm" onClick={onClose}>{t("common.cancel")}</Button>
           <Button variant="secondary" size="sm" onClick={() => submit(true)} disabled={receiveMut.isPending}>
-            Receive all remaining
+            {t("purchase.receiveAll")}
           </Button>
           <Button size="sm" onClick={() => submit(false)} disabled={receiveMut.isPending}>
-            {receiveMut.isPending ? "Receiving…" : "Receive selected"}
+            {receiveMut.isPending ? t("purchase.receiving") : t("purchase.receiveSelected")}
           </Button>
         </>
       }
     >
       {alert && <InlineAlert message={alert} className="mb-3" />}
       {pending.length === 0 ? (
-        <p className="text-body-sm text-on-surface-variant">Nothing left to receive on this order.</p>
+        <p className="text-body-sm text-on-surface-variant">{t("purchase.nothingToReceive")}</p>
       ) : (
         <div className="space-y-3">
           {pending.map((l) => (
@@ -89,13 +91,13 @@ export function ReceiveDialog({ open, onClose, order, productName }: ReceiveDial
               <div className="min-w-0">
                 <div className="truncate text-body-md font-medium text-on-surface">{productName(l.product_id)}</div>
                 <div className="text-[11px] text-on-surface-variant">
-                  Remaining {formatNumber(l.remaining_to_receive)} of {formatNumber(l.ordered_quantity)}
+                  {t("purchase.remaining")} {formatNumber(l.remaining_to_receive)} / {formatNumber(l.ordered_quantity)}
                 </div>
               </div>
               <Input
                 type="number"
                 min="0"
-                step="0.001"
+                step="1"
                 value={qty[l.id] ?? ""}
                 onChange={(e) => setQty((prev) => ({ ...prev, [l.id]: e.target.value }))}
                 className="w-28 py-2 text-right"

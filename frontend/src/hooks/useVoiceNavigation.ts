@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 export type VoiceStatus = "idle" | "listening" | "success" | "error";
@@ -17,38 +18,58 @@ interface VoiceCommand {
 const has = (t: string, ...words: string[]) => words.some((w) => t.includes(w));
 
 /**
- * Command table. Create intents are listed FIRST so "create product" beats the
- * plain "products" navigation match. Matching is keyword-based (not exact) so
- * natural phrasing like "go to inventory" or "open the sales orders" works.
+ * Language-aware voice command registry.
+ *
+ * Each key is a supported i18n language code. The active language's commands
+ * are loaded at runtime by useVoiceNavigation().
+ *
+ * PHASE 1: English commands are fully wired; Gujarati registry is intentionally
+ * empty — it will be populated in a later phase when Gujarati voice support is
+ * added. The hook falls back to English commands when the active language has
+ * no registered commands.
  */
-const COMMANDS: VoiceCommand[] = [
-  {
-    label: "Sales Order", path: "/sales", create: true,
-    test: (t) => has(t, "create", "new", "add") && has(t, "sales", "order"),
-  },
-  {
-    label: "Product", path: "/products", create: true,
-    test: (t) => has(t, "create", "new", "add") && has(t, "product"),
-  },
-  { label: "Dashboard", path: "/dashboard", test: (t) => has(t, "dashboard", "home", "overview") },
-  { label: "Products", path: "/products", test: (t) => has(t, "product") },
-  { label: "Sales Orders", path: "/sales", test: (t) => has(t, "sales", "sale") },
-  { label: "Invoices", path: "/invoices", test: (t) => has(t, "invoice", "billing") },
-  { label: "Purchase Orders", path: "/purchase-orders", test: (t) => has(t, "purchase", "purchasing") },
-{
-  label: "Bills of Materials",
-  path: "/bom",
-  test: (t) =>
-    t.includes("bom") ||
-    t.includes("bill of material") ||
-    t.includes("bills of material") ||
-    t.includes("bill materials") ||
-    t.includes("materials"),
-},
-  { label: "Manufacturing Orders", path: "/manufacturing", test: (t) => has(t, "manufactur", "production") },
-  { label: "Inventory", path: "/inventory", test: (t) => has(t, "inventory", "stock") },
-  { label: "Audit Logs", path: "/audit-logs", test: (t) => has(t, "audit", "log") },
-];
+export const VOICE_COMMAND_REGISTRY: Record<string, VoiceCommand[]> = {
+  en: [
+    {
+      label: "Sales Order",
+      path: "/sales",
+      create: true,
+      test: (t) => has(t, "create", "new", "add") && has(t, "sales", "order"),
+    },
+    {
+      label: "Product",
+      path: "/products",
+      create: true,
+      test: (t) => has(t, "create", "new", "add") && has(t, "product"),
+    },
+    { label: "Dashboard", path: "/dashboard", test: (t) => has(t, "dashboard", "home", "overview") },
+    { label: "Products", path: "/products", test: (t) => has(t, "product") },
+    { label: "Sales Orders", path: "/sales", test: (t) => has(t, "sales", "sale") },
+    { label: "Invoices", path: "/invoices", test: (t) => has(t, "invoice", "billing") },
+    { label: "Purchase Orders", path: "/purchase-orders", test: (t) => has(t, "purchase", "purchasing") },
+    {
+      label: "Bills of Materials",
+      path: "/bom",
+      test: (t) =>
+        t.includes("bom") ||
+        t.includes("bill of material") ||
+        t.includes("bills of material") ||
+        t.includes("bill materials") ||
+        t.includes("materials"),
+    },
+    { label: "Manufacturing Orders", path: "/manufacturing", test: (t) => has(t, "manufactur", "production") },
+    { label: "Inventory", path: "/inventory", test: (t) => has(t, "inventory", "stock") },
+    { label: "Audit Logs", path: "/audit-logs", test: (t) => has(t, "audit", "log") },
+  ],
+  // Gujarati voice commands — to be implemented in Phase 2.
+  gu: [],
+};
+
+/** Returns the command list for the active language, falling back to English. */
+function getCommandsForLanguage(lang: string): VoiceCommand[] {
+  const commands = VOICE_COMMAND_REGISTRY[lang];
+  return commands && commands.length > 0 ? commands : (VOICE_COMMAND_REGISTRY["en"] ?? []);
+}
 
 // ── Minimal Web Speech API typings (not in the standard lib.dom types) ───────
 type SpeechRecognitionLike = {
@@ -83,9 +104,13 @@ const RESET_MS = 2600;
 /**
  * Encapsulates browser speech recognition + command routing. No backend calls.
  * Returns the current status, a feedback message, and a toggle to start/stop.
+ *
+ * The recognition language follows the active i18n language. Commands are
+ * sourced from the VOICE_COMMAND_REGISTRY for the active language.
  */
 export function useVoiceNavigation() {
   const navigate = useNavigate();
+  const { i18n } = useTranslation();
   const [status, setStatus] = useState<VoiceStatus>("idle");
   const [message, setMessage] = useState(IDLE_LABEL);
 
@@ -106,7 +131,8 @@ export function useVoiceNavigation() {
     (transcript: string) => {
       resolvedRef.current = true;
       const t = transcript.toLowerCase().trim();
-      const cmd = COMMANDS.find((c) => c.test(t));
+      const commands = getCommandsForLanguage(i18n.language);
+      const cmd = commands.find((c) => c.test(t));
       if (!cmd) {
         setStatus("error");
         setMessage("Command not recognized");
@@ -123,14 +149,15 @@ export function useVoiceNavigation() {
       setStatus("success");
       scheduleReset();
     },
-    [navigate, scheduleReset],
+    [navigate, scheduleReset, i18n.language],
   );
 
   const start = useCallback(() => {
     const Ctor = getRecognitionCtor();
     if (!Ctor) return;
     const recognition = new Ctor();
-    recognition.lang = "en-US";
+    // Use the BCP-47 tag for the active language; default to en-US.
+    recognition.lang = i18n.language === "gu" ? "gu-IN" : "en-US";
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
@@ -171,7 +198,7 @@ export function useVoiceNavigation() {
     } catch {
       // start() throws if invoked while already active; safe to ignore.
     }
-  }, [handleTranscript, scheduleReset]);
+  }, [handleTranscript, scheduleReset, i18n.language]);
 
   const toggle = useCallback(() => {
     if (status === "listening") recognitionRef.current?.stop();

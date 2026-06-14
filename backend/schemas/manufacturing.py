@@ -1,8 +1,9 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from utils.enums import ManufacturingOrderStatus
+from utils.quantity_validation import validate_whole_quantity
 
 
 class ManufacturingOrderCreate(BaseModel):
@@ -10,6 +11,11 @@ class ManufacturingOrderCreate(BaseModel):
     quantity_to_produce: float = Field(gt=0)
     assignee: str | None = None
     schedule_date: datetime | None = None
+
+    @field_validator("quantity_to_produce")
+    @classmethod
+    def _whole_qty(cls, v: float) -> float:
+        return validate_whole_quantity(v)
 
 
 class ProduceOperationActual(BaseModel):

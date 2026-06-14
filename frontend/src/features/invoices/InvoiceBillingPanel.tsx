@@ -1,5 +1,6 @@
 import { Download, Eye, FileText, Send } from "lucide-react";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -16,13 +17,8 @@ import { INVOICE_STATUS_META, downloadInvoiceFile } from "@/features/invoices/in
 import { getFriendlyError } from "@/utils/apiError";
 import { formatCurrency, formatDateTime } from "@/utils/format";
 
-/**
- * "Invoice & Billing" — shown on a DELIVERED sales order. The ERP recommends
- * invoicing (Scenario A) and, once an invoice exists, surfaces it with the
- * download / send actions (Scenario B). The user stays in control of every
- * financial action.
- */
 export function InvoiceBillingPanel({ salesOrderId }: { salesOrderId: number }) {
+  const { t } = useTranslation();
   const { data: invoices, isLoading } = useInvoices();
   const invoice = useMemo(
     () => (invoices ?? []).find((inv) => inv.sales_order_id === salesOrderId) ?? null,
@@ -52,7 +48,7 @@ export function InvoiceBillingPanel({ salesOrderId }: { salesOrderId: number }) 
   };
 
   return (
-    <SectionCard title="Invoice & Billing">
+    <SectionCard title={t("invoices.invoiceBilling")}>
       {isLoading ? (
         <LoadingState className="py-8" />
       ) : !invoice ? (
@@ -64,16 +60,16 @@ export function InvoiceBillingPanel({ salesOrderId }: { salesOrderId: number }) 
             </div>
             <div>
               <h4 className="text-title-sm text-on-surface">
-                This order has been fulfilled and is ready for invoicing.
+                {t("invoices.readyForInvoicing")}
               </h4>
               <p className="text-body-sm text-on-surface-variant">
-                Generate an invoice to begin the customer billing process.
+                {t("invoices.generateToStart")}
               </p>
             </div>
           </div>
           <Button size="sm" onClick={onGenerate} disabled={generateMut.isPending} className="shrink-0">
             <FileText className="h-4 w-4" />
-            {generateMut.isPending ? "Generating…" : "Generate Invoice"}
+            {generateMut.isPending ? t("invoices.generating") : t("invoices.generateInvoice")}
           </Button>
         </div>
       ) : (
@@ -86,36 +82,34 @@ export function InvoiceBillingPanel({ salesOrderId }: { salesOrderId: number }) 
                 <StatusBadge meta={INVOICE_STATUS_META[invoice.status]} />
               </div>
               <p className="text-body-sm text-on-surface-variant">
-                Generated {formatDateTime(invoice.generated_at)}
+                {t("invoices.generated")} {formatDateTime(invoice.generated_at)}
               </p>
             </div>
             <div className="text-right">
-              <div className="text-[11px] uppercase text-on-surface-variant">Amount</div>
+              <div className="text-[11px] uppercase text-on-surface-variant">{t("common.amount")}</div>
               <div className="text-title-sm font-bold text-on-surface">{formatCurrency(invoice.total_amount)}</div>
             </div>
           </div>
 
           <p className="text-body-sm text-on-surface-variant">
-            {invoice.status === "SENT"
-              ? "Invoice has been emailed to the customer."
-              : "Review and send this invoice to complete the customer billing process."}
+            {invoice.status === "SENT" ? t("invoices.invoiceEmailed") : t("invoices.reviewAndSend")}
           </p>
 
           <div className="flex flex-wrap gap-2">
             <Button variant="secondary" size="sm" asChild>
               <Link to={`/invoices/${invoice.id}`}>
                 <Eye className="h-4 w-4" />
-                View Invoice
+                {t("invoices.viewInvoice")}
               </Link>
             </Button>
             <Button variant="secondary" size="sm" onClick={() => downloadInvoiceFile(invoice.id, invoice.invoice_number)}>
               <Download className="h-4 w-4" />
-              Download PDF
+              {t("invoices.downloadPdf")}
             </Button>
             {invoice.status === "DRAFT" && (
               <Button size="sm" onClick={onSend} disabled={sendMut.isPending}>
                 <Send className="h-4 w-4" />
-                {sendMut.isPending ? "Sending…" : "Send Email"}
+                {sendMut.isPending ? t("invoices.sending") : t("invoices.sendEmail")}
               </Button>
             )}
           </div>

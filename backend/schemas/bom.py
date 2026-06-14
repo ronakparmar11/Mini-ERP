@@ -1,11 +1,18 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from utils.quantity_validation import validate_whole_quantity
 
 
 class BoMComponentCreate(BaseModel):
     component_product_id: int
     quantity_required: float = Field(gt=0)
+
+    @field_validator("quantity_required")
+    @classmethod
+    def _whole_qty(cls, v: float) -> float:
+        return validate_whole_quantity(v)
 
 
 class BoMOperationCreate(BaseModel):
@@ -18,6 +25,11 @@ class BoMCreate(BaseModel):
     quantity: float = Field(gt=0, default=1)
     components: list[BoMComponentCreate] = Field(min_length=1)
     operations: list[BoMOperationCreate] = []
+
+    @field_validator("quantity")
+    @classmethod
+    def _whole_qty(cls, v: float) -> float:
+        return validate_whole_quantity(v)
 
 
 class BoMComponentOut(BaseModel):

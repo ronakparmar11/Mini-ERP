@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { InlineAlert } from "@/components/common/InlineAlert";
@@ -17,11 +18,8 @@ interface ProduceDialogProps {
   productName: (id: number) => string;
 }
 
-/**
- * Produce dialog: lets the operator record actual durations per operation.
- * Submitting consumes components and produces the finished good on the backend.
- */
 export function ProduceDialog({ open, onClose, order, productName }: ProduceDialogProps) {
+  const { t } = useTranslation();
   const produceMut = useProduceMO(order.id);
   const [actuals, setActuals] = useState<Record<number, string>>({});
   const [alert, setAlert] = useState<string | null>(null);
@@ -58,15 +56,15 @@ export function ProduceDialog({ open, onClose, order, productName }: ProduceDial
     <Modal
       open={open}
       onClose={onClose}
-      title="Produce Order"
-      description="Consumes components and adds finished goods to stock."
+      title={t("manufacturing.produceOrder")}
+      description={t("manufacturing.produceOrderDesc")}
       footer={
         <>
           <Button variant="secondary" size="sm" onClick={onClose}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button size="sm" onClick={submit} disabled={produceMut.isPending}>
-            {produceMut.isPending ? "Producing…" : "Confirm Production"}
+            {produceMut.isPending ? t("manufacturing.producing") : t("manufacturing.confirmProduction")}
           </Button>
         </>
       }
@@ -81,7 +79,7 @@ export function ProduceDialog({ open, onClose, order, productName }: ProduceDial
 
         {order.components.length > 0 && (
           <div>
-            <p className="mb-2 text-label-upper uppercase text-on-surface-variant">Components to consume</p>
+            <p className="mb-2 text-label-upper uppercase text-on-surface-variant">{t("manufacturing.componentsToProduce")}</p>
             <ul className="space-y-1 text-body-sm text-on-surface">
               {order.components.map((c) => (
                 <li key={c.id} className="flex justify-between">
@@ -95,14 +93,14 @@ export function ProduceDialog({ open, onClose, order, productName }: ProduceDial
 
         {order.operations.length > 0 && (
           <div>
-            <p className="mb-2 text-label-upper uppercase text-on-surface-variant">Actual durations (min)</p>
+            <p className="mb-2 text-label-upper uppercase text-on-surface-variant">{t("manufacturing.actualDurations")}</p>
             <div className="space-y-2">
               {order.operations.map((o) => (
                 <div key={o.id} className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <div className="truncate text-body-md text-on-surface">{o.work_center}</div>
                     <div className="text-[11px] text-on-surface-variant">
-                      Expected {formatNumber(o.expected_duration)} min
+                      {t("manufacturing.expectedMin", { n: formatNumber(o.expected_duration) })}
                     </div>
                   </div>
                   <Input

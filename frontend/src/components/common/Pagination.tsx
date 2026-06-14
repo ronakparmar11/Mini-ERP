@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/cn";
@@ -39,6 +40,7 @@ function buildPages(current: number, total: number): (number | "ellipsis")[] {
 export function Pagination({
   page, totalPages, total, from, to, onPrevious, onNext, onGoTo, noun = "records", className,
 }: PaginationProps) {
+  const { t } = useTranslation();
   if (total === 0) return null;
   const pages = buildPages(page, totalPages);
 
@@ -50,14 +52,14 @@ export function Pagination({
       )}
     >
       <p className="text-body-sm text-on-surface-variant">
-        Showing <span className="font-semibold text-on-surface">{from}–{to}</span> of{" "}
+        {t("pagination.showing")} <span className="font-semibold text-on-surface">{from}–{to}</span> {t("pagination.of")}{" "}
         <span className="font-semibold text-on-surface">{total}</span> {noun}
       </p>
 
       <div className="flex items-center gap-1">
         <Button variant="secondary" size="sm" onClick={onPrevious} disabled={page <= 1}>
           <ChevronLeft className="h-4 w-4" />
-          <span className="hidden sm:inline">Previous</span>
+          <span className="hidden sm:inline">{t("pagination.previous")}</span>
         </Button>
 
         {/* Numeric buttons (sm+) */}
@@ -87,11 +89,11 @@ export function Pagination({
 
         {/* Compact indicator (mobile) */}
         <span className="px-2 text-body-sm text-on-surface-variant sm:hidden">
-          Page {page} of {totalPages}
+          {t("pagination.page")} {page} {t("pagination.of")} {totalPages}
         </span>
 
         <Button variant="secondary" size="sm" onClick={onNext} disabled={page >= totalPages}>
-          <span className="hidden sm:inline">Next</span>
+          <span className="hidden sm:inline">{t("pagination.next")}</span>
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>

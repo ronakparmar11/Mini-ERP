@@ -16,6 +16,7 @@ import { PurchaseOrdersPage } from "@/features/purchase/PurchaseOrdersPage";
 import { SalesOrderDetailPage } from "@/features/sales/SalesOrderDetailPage";
 import { SalesOrdersPage } from "@/features/sales/SalesOrdersPage";
 import { LoginPage } from "@/pages/LoginPage";
+import { SettingsPage } from "@/pages/SettingsPage";
 import { SupportPage } from "@/pages/SupportPage";
 
 export function AppRoutes() {
@@ -39,6 +40,7 @@ export function AppRoutes() {
           <Route path="/manufacturing/:id" element={<ManufacturingDetailPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/audit-logs" element={<AuditLogsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="/support" element={<SupportPage />} />
         </Route>
       </Route>

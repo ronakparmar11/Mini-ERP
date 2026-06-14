@@ -1,5 +1,6 @@
 import { Download, Eye } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { PageHeader } from "@/components/common/PageHeader";
@@ -14,28 +15,29 @@ import type { Invoice, InvoiceStatus } from "@/types/invoice";
 import { cn } from "@/utils/cn";
 import { formatCurrency, formatDateTime } from "@/utils/format";
 
-const FILTERS: { label: string; value: InvoiceStatus | "ALL" }[] = [
-  { label: "All", value: "ALL" },
-  { label: "Draft", value: "DRAFT" },
-  { label: "Sent", value: "SENT" },
-];
-
 export function InvoiceListPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [filter, setFilter] = useState<InvoiceStatus | "ALL">("ALL");
   const { data, isLoading, error, refetch } = useInvoices(filter === "ALL" ? undefined : filter);
   const pg = usePagination(data ?? [], { resetKey: filter });
 
+  const FILTERS: { label: string; value: InvoiceStatus | "ALL" }[] = [
+    { label: t("invoices.filterAll"), value: "ALL" },
+    { label: t("invoices.filterDraft"), value: "DRAFT" },
+    { label: t("invoices.filterSent"), value: "SENT" },
+  ];
+
   const columns: Column<Invoice>[] = [
     {
       id: "number",
-      header: "Invoice #",
+      header: t("invoices.invoiceNumber"),
       width: "150px",
       cell: (inv) => <span className="font-semibold text-primary">{inv.invoice_number}</span>,
     },
     {
       id: "customer",
-      header: "Customer",
+      header: t("common.customer"),
       cell: (inv) => (
         <div>
           <div className="font-medium text-on-surface">{inv.customer_name}</div>
@@ -43,21 +45,21 @@ export function InvoiceListPage() {
         </div>
       ),
     },
-    { id: "status", header: "Status", cell: (inv) => <StatusBadge meta={INVOICE_STATUS_META[inv.status]} /> },
+    { id: "status", header: t("common.status"), cell: (inv) => <StatusBadge meta={INVOICE_STATUS_META[inv.status]} /> },
     {
       id: "total",
-      header: "Total",
+      header: t("common.total"),
       align: "right",
       cell: (inv) => <span className="font-semibold">{formatCurrency(inv.total_amount)}</span>,
     },
     {
       id: "generated",
-      header: "Generated",
+      header: t("invoices.generated"),
       cell: (inv) => <span className="text-on-surface-variant">{formatDateTime(inv.generated_at)}</span>,
     },
     {
       id: "actions",
-      header: "Actions",
+      header: t("common.status"),
       align: "right",
       cell: (inv) => (
         <div className="flex justify-end gap-1">
@@ -70,7 +72,7 @@ export function InvoiceListPage() {
             }}
           >
             <Eye className="h-4 w-4" />
-            View
+            {t("common.view")}
           </Button>
           <Button
             variant="ghost"
@@ -81,7 +83,7 @@ export function InvoiceListPage() {
             }}
           >
             <Download className="h-4 w-4" />
-            Download
+            {t("common.download")}
           </Button>
         </div>
       ),
@@ -91,8 +93,8 @@ export function InvoiceListPage() {
   return (
     <div className="space-y-6 p-6 lg:p-8">
       <PageHeader
-        title="Invoices"
-        subtitle="Review, download and email invoices for fulfilled orders."
+        title={t("invoices.title")}
+        subtitle={t("invoices.subtitle")}
       />
 
       <div className="flex flex-col rounded-xl border border-outline-variant bg-surface shadow-sm">
@@ -119,7 +121,7 @@ export function InvoiceListPage() {
           error={error}
           onRetry={() => refetch()}
           onRowClick={(inv) => navigate(`/invoices/${inv.id}`)}
-          emptyMessage="No invoices found for this filter."
+          emptyMessage={t("invoices.noInvoicesFound")}
         />
 
         <Pagination
@@ -131,7 +133,7 @@ export function InvoiceListPage() {
           onPrevious={pg.previousPage}
           onNext={pg.nextPage}
           onGoTo={pg.goToPage}
-          noun="invoices"
+          noun={t("invoices.noun")}
         />
       </div>
     </div>

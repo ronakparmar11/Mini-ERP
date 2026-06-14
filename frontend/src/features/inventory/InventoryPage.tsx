@@ -1,5 +1,6 @@
 import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import { MovementBadge } from "@/components/common/MovementBadge";
@@ -28,6 +29,7 @@ const selectClass =
   "rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-body-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30";
 
 export function InventoryPage() {
+  const { t } = useTranslation();
   const { data, isLoading, error, refetch } = useMovements();
   const { data: products } = useProducts();
 
@@ -55,12 +57,12 @@ export function InventoryPage() {
   const columns: Column<InventoryMovement>[] = [
     {
       id: "timestamp",
-      header: "Timestamp",
+      header: t("inventory.timestamp"),
       cell: (m) => <span className="text-on-surface-variant">{formatDateTime(m.timestamp)}</span>,
     },
     {
       id: "activity",
-      header: "Activity",
+      header: t("inventory.activity"),
       cell: (m) => {
         const meta = MOVEMENT_META[m.movement_type];
         const qty = Math.abs(Number(m.quantity));
@@ -84,7 +86,7 @@ export function InventoryPage() {
     },
     {
       id: "quantity",
-      header: "Quantity",
+      header: t("inventory.quantity"),
       align: "right",
       cell: (m) => {
         const dir = MOVEMENT_META[m.movement_type].direction;
@@ -107,8 +109,8 @@ export function InventoryPage() {
   return (
     <div className="space-y-6 p-6 lg:p-8">
       <PageHeader
-        title="Inventory Movements"
-        subtitle="Immutable stock ledger — every reservation, receipt, consumption and production."
+        title={t("inventory.title")}
+        subtitle={t("inventory.subtitle")}
       />
 
       <div className="flex flex-col rounded-xl border border-outline-variant bg-surface shadow-sm">
@@ -118,27 +120,29 @@ export function InventoryPage() {
             <input
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search product…"
+              placeholder={t("inventory.searchPlaceholder")}
               className="w-full rounded-lg border border-outline-variant bg-surface-container-low py-2 pl-10 pr-3 text-body-md text-on-surface placeholder:text-outline focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
           <select className={selectClass} value={movementType} onChange={(e) => setMovementType(e.target.value as MovementType | "ALL")}>
-            <option value="ALL">All movement types</option>
-            {MOVEMENT_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {MOVEMENT_META[t].label}
+            <option value="ALL">{t("inventory.allMovementTypes")}</option>
+            {MOVEMENT_TYPES.map((type) => (
+              <option key={type} value={type}>
+                {MOVEMENT_META[type].label}
               </option>
             ))}
           </select>
           <select className={selectClass} value={referenceType} onChange={(e) => setReferenceType(e.target.value as ReferenceType | "ALL")}>
-            <option value="ALL">All references</option>
-            {REFERENCE_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {t.replace("_", " ")}
+            <option value="ALL">{t("inventory.allReferences")}</option>
+            {REFERENCE_TYPES.map((type) => (
+              <option key={type} value={type}>
+                {type.replace("_", " ")}
               </option>
             ))}
           </select>
-          <span className="ml-auto px-1 text-[12px] text-on-surface-variant">{rows.length} movements</span>
+          <span className="ml-auto px-1 text-[12px] text-on-surface-variant">
+            {t("inventory.movementsCount", { count: rows.length })}
+          </span>
         </div>
 
         <DataTable
@@ -148,7 +152,7 @@ export function InventoryPage() {
           isLoading={isLoading}
           error={error}
           onRetry={() => refetch()}
-          emptyMessage="No inventory movements match these filters."
+          emptyMessage={t("inventory.noMovements")}
         />
 
         <Pagination
@@ -160,7 +164,7 @@ export function InventoryPage() {
           onPrevious={pg.previousPage}
           onNext={pg.nextPage}
           onGoTo={pg.goToPage}
-          noun="movements"
+          noun={t("inventory.noun")}
         />
       </div>
     </div>

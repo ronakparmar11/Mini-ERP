@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { ErrorState, LoadingState } from "@/components/common/StateViews";
@@ -10,6 +11,7 @@ import type { ManufacturingOrder, ManufacturingOrderStatus } from "@/types/manuf
 import { cn } from "@/utils/cn";
 
 export function KanbanBoard() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data, isLoading, error, refetch } = useManufacturingOrders();
   const { data: products } = useProducts();
@@ -31,7 +33,7 @@ export function KanbanBoard() {
     return map;
   }, [data]);
 
-  if (isLoading) return <LoadingState className="py-24" label="Loading manufacturing orders…" />;
+  if (isLoading) return <LoadingState className="py-24" label={t("common.loading")} />;
   if (error)
     return (
       <div className="py-12">
@@ -77,7 +79,7 @@ export function KanbanBoard() {
             <div className="scrollbar-thin flex-1 space-y-3 overflow-y-auto p-3">
               {items.length === 0 ? (
                 <div className="flex h-24 items-center justify-center rounded-lg border border-dashed border-outline-variant text-body-sm text-on-surface-variant">
-                  No orders
+                  {t("manufacturing.noOrders")}
                 </div>
               ) : (
                 items.map((mo) => (

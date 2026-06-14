@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -19,7 +20,7 @@ const schema = z.object({
   name: z.string().min(1, "Name is required"),
   sales_price: z.coerce.number().min(0, "Must be ≥ 0"),
   cost_price: z.coerce.number().min(0, "Must be ≥ 0"),
-  on_hand_qty: z.coerce.number().min(0, "Must be ≥ 0"),
+  on_hand_qty: z.coerce.number().int().min(0, "Must be ≥ 0"),
   procurement_method: z.enum(["PURCHASE", "MANUFACTURE"]),
   procure_on_demand: z.boolean(),
   vendor_id: z
@@ -38,6 +39,7 @@ interface ProductDrawerProps {
 }
 
 export function ProductDrawer({ open, product, onClose }: ProductDrawerProps) {
+  const { t } = useTranslation();
   const isEdit = product !== null;
   const createMut = useCreateProduct();
   const updateMut = useUpdateProduct();
@@ -53,7 +55,6 @@ export function ProductDrawer({ open, product, onClose }: ProductDrawerProps) {
     resolver: zodResolver(schema),
   });
 
-  // Re-seed the form whenever the drawer target changes.
   useEffect(() => {
     if (!open) return;
     setConfirmDelete(false);
@@ -71,7 +72,7 @@ export function ProductDrawer({ open, product, onClose }: ProductDrawerProps) {
   if (!open) return null;
 
   const onSubmit = handleSubmit(async (raw) => {
-    const values = schema.parse(raw); // applies coercions/transforms
+    const values = schema.parse(raw);
     try {
       if (isEdit && product) {
         await updateMut.mutateAsync({
@@ -111,17 +112,18 @@ export function ProductDrawer({ open, product, onClose }: ProductDrawerProps) {
       toast.success(`Deleted "${product.name}"`);
       onClose();
     } catch (err) {
-      // Backend returns 409 if the product still holds stock/reservations.
       toast.error(getApiErrorMessage(err));
       setConfirmDelete(false);
     }
   };
 
+  const drawerTitle = isEdit ? t("products.editProduct") : t("products.newProduct");
+
   return (
-    <DrawerShell open={open} onClose={onClose} label={isEdit ? "Edit Product" : "New Product"}>
+    <DrawerShell open={open} onClose={onClose} label={drawerTitle}>
         {/* Header */}
         <div className="flex items-center justify-between border-b border-outline-variant p-4">
-          <h3 className="text-title-sm text-on-background">{isEdit ? "Edit Product" : "New Product"}</h3>
+          <h3 className="text-title-sm text-on-background">{drawerTitle}</h3>
           <button
             onClick={onClose}
             className="rounded-full p-1 text-on-surface-variant transition-colors hover:bg-surface-container"
@@ -134,45 +136,45 @@ export function ProductDrawer({ open, product, onClose }: ProductDrawerProps) {
         <form id="product-form" onSubmit={onSubmit} className="flex-1 space-y-6 overflow-y-auto p-4">
           {isEdit && product && (
             <div className="grid grid-cols-3 gap-3 rounded-lg border border-outline-variant bg-surface-container-low p-3">
-              <ReadStat label="On Hand" value={formatNumber(product.on_hand_qty)} accent="text-on-background" />
-              <ReadStat label="Reserved" value={formatNumber(product.reserved_qty)} accent="text-on-surface-variant" />
-              <ReadStat label="Free" value={formatNumber(product.free_to_use_qty)} accent="text-tertiary-container" />
+              <ReadStat label={t("products.onHand")} value={formatNumber(product.on_hand_qty)} accent="text-on-background" />
+              <ReadStat label={t("products.reserved")} value={formatNumber(product.reserved_qty)} accent="text-on-surface-variant" />
+              <ReadStat label={t("products.free")} value={formatNumber(product.free_to_use_qty)} accent="text-tertiary-container" />
               <p className="col-span-3 text-[11px] text-on-surface-variant">
-                Stock changes only through Purchase, Manufacturing or Delivery flows.
+                {t("products.stockChangesNote")}
               </p>
             </div>
           )}
 
-          <Section title="General Information">
+          <Section title={t("products.generalInformation")}>
             <div>
-              <Label htmlFor="name">Product Name</Label>
+              <Label htmlFor="name">{t("products.productName")}</Label>
               <Input id="name" {...register("name")} />
               {errors.name && <FieldError>{errors.name.message}</FieldError>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="sales_price">Sales Price</Label>
+                <Label htmlFor="sales_price">{t("products.salesPrice")}</Label>
                 <Input id="sales_price" type="number" step="0.01" {...register("sales_price")} />
                 {errors.sales_price && <FieldError>{errors.sales_price.message}</FieldError>}
               </div>
               <div>
-                <Label htmlFor="cost_price">Cost Price</Label>
+                <Label htmlFor="cost_price">{t("products.costPrice")}</Label>
                 <Input id="cost_price" type="number" step="0.01" {...register("cost_price")} />
                 {errors.cost_price && <FieldError>{errors.cost_price.message}</FieldError>}
               </div>
             </div>
           </Section>
 
-          <Section title="Inventory & Procurement">
+          <Section title={t("products.inventoryProcurement")}>
             {!isEdit && (
               <div>
-                <Label htmlFor="on_hand_qty">Opening On-Hand Quantity</Label>
-                <Input id="on_hand_qty" type="number" step="0.001" {...register("on_hand_qty")} />
+                <Label htmlFor="on_hand_qty">{t("products.openingOnHand")}</Label>
+                <Input id="on_hand_qty" type="number" step="1" {...register("on_hand_qty")} />
                 {errors.on_hand_qty && <FieldError>{errors.on_hand_qty.message}</FieldError>}
               </div>
             )}
             <div>
-              <Label htmlFor="procurement_method">Procurement Route</Label>
+              <Label htmlFor="procurement_method">{t("products.procurementRoute")}</Label>
               <select
                 id="procurement_method"
                 {...register("procurement_method")}
@@ -189,11 +191,11 @@ export function ProductDrawer({ open, product, onClose }: ProductDrawerProps) {
                 className="h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary"
               />
               <span className="text-body-sm text-on-surface">
-                Procure on demand (auto PO/MO on sales shortage)
+                {t("products.procureOnDemand")}
               </span>
             </label>
             <div>
-              <Label htmlFor="vendor_id">Default Vendor ID (optional)</Label>
+              <Label htmlFor="vendor_id">{t("products.defaultVendorId")}</Label>
               <Input id="vendor_id" type="number" placeholder="e.g. 3" {...register("vendor_id")} />
             </div>
           </Section>
@@ -206,25 +208,25 @@ export function ProductDrawer({ open, product, onClose }: ProductDrawerProps) {
               (confirmDelete ? (
                 <div className="flex items-center gap-2">
                   <Button variant="destructive" size="sm" onClick={onDelete} disabled={deleteMut.isPending}>
-                    {deleteMut.isPending ? "Deleting…" : "Confirm"}
+                    {deleteMut.isPending ? t("products.deleting") : t("products.confirmDelete")}
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(false)}>
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                 </div>
               ) : (
                 <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(true)} className="text-error">
                   <Trash2 className="h-4 w-4" />
-                  Delete
+                  {t("common.delete")}
                 </Button>
               ))}
           </div>
           <div className="flex gap-2">
             <Button variant="secondary" size="sm" onClick={onClose}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" form="product-form" size="sm" disabled={isSubmitting}>
-              {isSubmitting ? "Saving…" : isEdit ? "Save Changes" : "Create Product"}
+              {isSubmitting ? t("products.saving") : isEdit ? t("products.saveChanges") : t("products.createProduct")}
             </Button>
           </div>
         </div>

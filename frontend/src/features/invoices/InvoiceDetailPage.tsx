@@ -1,5 +1,6 @@
 import { ChevronRight, Download, Mail, Send } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -15,6 +16,7 @@ import { getFriendlyError } from "@/utils/apiError";
 import { formatCurrency, formatDateTime, formatNumber } from "@/utils/format";
 
 export function InvoiceDetailPage() {
+  const { t } = useTranslation();
   const { id: idParam } = useParams();
   const id = Number(idParam);
   const { data: invoice, isLoading, error, refetch } = useInvoice(id);
@@ -56,7 +58,7 @@ export function InvoiceDetailPage() {
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <nav className="flex items-center gap-2 text-body-sm text-on-surface-variant">
           <Link to="/invoices" className="hover:text-primary">
-            Invoices
+            {t("invoices.invoicesLink")}
           </Link>
           <ChevronRight className="h-4 w-4" />
           <span className="font-semibold text-on-surface">{invoice.invoice_number}</span>
@@ -64,12 +66,12 @@ export function InvoiceDetailPage() {
         <div className="flex items-center gap-2">
           <Button variant="secondary" size="sm" onClick={() => downloadInvoiceFile(invoice.id, invoice.invoice_number)}>
             <Download className="h-4 w-4" />
-            Download PDF
+            {t("invoices.downloadPdf")}
           </Button>
           {!isSent && (
             <Button size="sm" onClick={openSend}>
               <Send className="h-4 w-4" />
-              Send Email
+              {t("invoices.sendEmail")}
             </Button>
           )}
         </div>
@@ -95,10 +97,10 @@ export function InvoiceDetailPage() {
             </Link>
           </div>
           <div className="flex flex-col gap-2 md:text-right">
-            <Row label="Generated" value={formatDateTime(invoice.generated_at)} />
-            <Row label="Emailed" value={invoice.sent_at ? formatDateTime(invoice.sent_at) : "—"} />
+            <Row label={t("invoices.generated")} value={formatDateTime(invoice.generated_at)} />
+            <Row label={t("invoices.emailed")} value={invoice.sent_at ? formatDateTime(invoice.sent_at) : "—"} />
             <div className="flex justify-between gap-8 md:justify-end">
-              <span className="text-body-sm text-on-surface-variant">Total:</span>
+              <span className="text-body-sm text-on-surface-variant">{t("invoices.totalLabel")}</span>
               <span className="text-title-sm font-bold text-primary">{formatCurrency(invoice.total_amount)}</span>
             </div>
           </div>
@@ -109,10 +111,10 @@ export function InvoiceDetailPage() {
           <table className="w-full border-collapse text-left">
             <thead>
               <tr className="border-b border-outline-variant bg-surface-container-lowest">
-                <th className="px-6 py-3 text-label-upper uppercase text-on-surface-variant">Product</th>
-                <th className="px-6 py-3 text-right text-label-upper uppercase text-on-surface-variant">Qty Delivered</th>
-                <th className="px-6 py-3 text-right text-label-upper uppercase text-on-surface-variant">Unit Price</th>
-                <th className="px-6 py-3 text-right text-label-upper uppercase text-on-surface-variant">Subtotal</th>
+                <th className="px-6 py-3 text-label-upper uppercase text-on-surface-variant">{t("common.product")}</th>
+                <th className="px-6 py-3 text-right text-label-upper uppercase text-on-surface-variant">{t("invoices.qtyDelivered")}</th>
+                <th className="px-6 py-3 text-right text-label-upper uppercase text-on-surface-variant">{t("common.unitPrice")}</th>
+                <th className="px-6 py-3 text-right text-label-upper uppercase text-on-surface-variant">{t("common.subtotal")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant text-table-data text-on-surface">
@@ -128,7 +130,7 @@ export function InvoiceDetailPage() {
             <tfoot className="border-t-2 border-outline-variant bg-surface-container-lowest">
               <tr>
                 <td className="px-6 py-4" colSpan={2} />
-                <td className="px-6 py-3 text-right text-body-sm text-on-surface-variant">Grand Total:</td>
+                <td className="px-6 py-3 text-right text-body-sm text-on-surface-variant">{t("invoices.grandTotal")}</td>
                 <td className="px-6 py-3 text-right text-title-sm font-bold text-primary">
                   {formatCurrency(invoice.total_amount)}
                 </td>
@@ -138,12 +140,10 @@ export function InvoiceDetailPage() {
         </div>
       </div>
 
-      {/* Billing status guidance */}
-      <SectionCard title="Billing Status">
+      {/* Billing status */}
+      <SectionCard title={t("invoices.billingStatus")}>
         <p className="p-4 text-body-sm text-on-surface-variant">
-          {isSent
-            ? "Invoice has been emailed to the customer."
-            : "Review and send this invoice to complete the customer billing process."}
+          {isSent ? t("invoices.invoiceEmailed") : t("invoices.reviewAndSend")}
         </p>
       </SectionCard>
 
@@ -151,19 +151,19 @@ export function InvoiceDetailPage() {
       <Modal
         open={showSend}
         onClose={() => setShowSend(false)}
-        title="Send Invoice Email"
+        title={t("invoices.sendInvoiceEmailTitle")}
         description={`Email ${invoice.invoice_number} with the PDF attached to the customer.`}
         footer={
           <>
             <Button variant="secondary" size="sm" onClick={() => setShowSend(false)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               size="sm"
               onClick={onSend}
               disabled={sendMut.isPending || !invoice.customer_email}
             >
-              {sendMut.isPending ? "Sending…" : "Send Email"}
+              {sendMut.isPending ? t("invoices.sending") : t("invoices.sendEmail")}
             </Button>
           </>
         }
@@ -172,11 +172,11 @@ export function InvoiceDetailPage() {
           {sendAlert && <InlineAlert message={sendAlert} />}
           {invoice.customer_email ? (
             <p className="text-body-sm text-on-surface">
-              The invoice will be sent to <span className="font-semibold">{invoice.customer_email}</span>.
+              {t("invoices.willBeSentTo")} <span className="font-semibold">{invoice.customer_email}</span>.
             </p>
           ) : (
             <p className="text-body-sm text-on-surface-variant">
-              No customer email is on file for this invoice.
+              {t("invoices.noCustomerEmail")}
             </p>
           )}
         </div>

@@ -94,7 +94,7 @@ export function SalesLineEditor({ lines, onChange, products, isLoadingProducts }
                 <Input
                   type="number"
                   min="0"
-                  step="0.001"
+                  step="1"
                   value={line.ordered_quantity}
                   onChange={(e) => update(line.key, { ordered_quantity: e.target.value })}
                   className="py-2"

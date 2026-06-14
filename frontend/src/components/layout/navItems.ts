@@ -12,7 +12,8 @@ import {
 } from "lucide-react";
 
 export interface NavItem {
-  label: string;
+  /** i18n translation key under the "sidebar" namespace. */
+  labelKey: string;
   to: string;
   icon: LucideIcon;
 }
@@ -27,36 +28,38 @@ export interface NavSection {
  * Sidebar information architecture grouped by business workflow
  * (Operations → Production → Procurement → Governance). Section labels give
  * orientation without removing any existing route.
+ *
+ * Labels now use i18n keys; the Sidebar component resolves them via t().
  */
 export const NAV_SECTIONS: NavSection[] = [
   {
     label: null,
-    items: [{ label: "Dashboard", to: "/dashboard", icon: LayoutDashboard }],
+    items: [{ labelKey: "sidebar.dashboard", to: "/dashboard", icon: LayoutDashboard }],
   },
   {
     label: "Operations",
     items: [
-      { label: "Sales Orders", to: "/sales", icon: ReceiptText },
-      { label: "Invoices", to: "/invoices", icon: FileText },
+      { labelKey: "sidebar.salesOrders", to: "/sales", icon: ReceiptText },
+      { labelKey: "sidebar.invoices", to: "/invoices", icon: FileText },
     ],
   },
   {
     label: "Production",
     items: [
-      { label: "Products", to: "/products", icon: Package },
-      { label: "Bills of Materials", to: "/bom", icon: Network },
-      { label: "Manufacturing Orders", to: "/manufacturing", icon: Factory },
+      { labelKey: "sidebar.products", to: "/products", icon: Package },
+      { labelKey: "sidebar.billsOfMaterials", to: "/bom", icon: Network },
+      { labelKey: "sidebar.manufacturingOrders", to: "/manufacturing", icon: Factory },
     ],
   },
   {
     label: "Procurement",
     items: [
-      { label: "Purchase Orders", to: "/purchase-orders", icon: ShoppingCart },
-      { label: "Inventory", to: "/inventory", icon: Warehouse },
+      { labelKey: "sidebar.purchaseOrders", to: "/purchase-orders", icon: ShoppingCart },
+      { labelKey: "sidebar.inventory", to: "/inventory", icon: Warehouse },
     ],
   },
   {
     label: "Governance",
-    items: [{ label: "Audit Logs", to: "/audit-logs", icon: History }],
+    items: [{ labelKey: "sidebar.auditLogs", to: "/audit-logs", icon: History }],
   },
 ];

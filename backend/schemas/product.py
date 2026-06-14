@@ -1,8 +1,9 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from utils.enums import ProcurementMethod
+from utils.quantity_validation import validate_whole_quantity
 
 
 class ProductCreate(BaseModel):
@@ -13,6 +14,11 @@ class ProductCreate(BaseModel):
     procure_on_demand: bool = False
     procurement_method: ProcurementMethod = ProcurementMethod.PURCHASE
     vendor_id: int | None = None
+
+    @field_validator("on_hand_qty")
+    @classmethod
+    def _whole_on_hand(cls, v: float) -> float:
+        return validate_whole_quantity(v)
 
 
 class ProductUpdate(BaseModel):

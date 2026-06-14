@@ -1,5 +1,6 @@
 import { Trash2, X } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { DrawerShell } from "@/components/common/DrawerShell";
@@ -17,6 +18,7 @@ interface BomDetailDrawerProps {
 }
 
 export function BomDetailDrawer({ open, bom, productName, onClose }: BomDetailDrawerProps) {
+  const { t } = useTranslation();
   const deleteMut = useDeleteBom();
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -44,22 +46,22 @@ export function BomDetailDrawer({ open, bom, productName, onClose }: BomDetailDr
 
         <div className="flex-1 space-y-6 overflow-y-auto p-4">
           <div className="rounded-lg border border-outline-variant bg-surface-container-low p-3">
-            <div className="text-[11px] font-semibold uppercase text-on-surface-variant">Finished Product</div>
+            <div className="text-[11px] font-semibold uppercase text-on-surface-variant">{t("bom.finishedProductSection")}</div>
             <div className="text-title-sm text-on-surface">{productName(bom.finished_product_id)}</div>
             <div className="mt-1 text-body-sm text-on-surface-variant">
-              Produces {formatNumber(bom.quantity)} per batch
+              {t("bom.producesPerBatch", { qty: formatNumber(bom.quantity) })}
             </div>
           </div>
 
           <section>
             <h4 className="mb-2 border-b border-outline-variant pb-1 text-label-upper uppercase text-on-surface-variant">
-              Components ({bom.components.length})
+              {t("bom.componentsSection")} ({bom.components.length})
             </h4>
             <table className="w-full text-left text-table-data">
               <thead>
                 <tr className="text-label-upper uppercase text-on-surface-variant">
-                  <th className="py-2">Product</th>
-                  <th className="py-2 text-right">Qty Required</th>
+                  <th className="py-2">{t("bom.product")}</th>
+                  <th className="py-2 text-right">{t("bom.qtyRequired")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
@@ -75,16 +77,16 @@ export function BomDetailDrawer({ open, bom, productName, onClose }: BomDetailDr
 
           <section>
             <h4 className="mb-2 border-b border-outline-variant pb-1 text-label-upper uppercase text-on-surface-variant">
-              Operations ({bom.operations.length})
+              {t("bom.operationsSection")} ({bom.operations.length})
             </h4>
             {bom.operations.length === 0 ? (
-              <p className="text-body-sm text-on-surface-variant">No operations defined.</p>
+              <p className="text-body-sm text-on-surface-variant">{t("bom.noOperations")}</p>
             ) : (
               <table className="w-full text-left text-table-data">
                 <thead>
                   <tr className="text-label-upper uppercase text-on-surface-variant">
-                    <th className="py-2">Work Center</th>
-                    <th className="py-2 text-right">Expected (min)</th>
+                    <th className="py-2">{t("bom.workCenter")}</th>
+                    <th className="py-2 text-right">{t("bom.expectedMin")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant">
@@ -104,20 +106,18 @@ export function BomDetailDrawer({ open, bom, productName, onClose }: BomDetailDr
           {confirmDelete ? (
             <div className="flex items-center gap-2">
               <Button variant="destructive" size="sm" onClick={onDelete} disabled={deleteMut.isPending}>
-                {deleteMut.isPending ? "Deleting…" : "Confirm delete"}
+                {deleteMut.isPending ? t("bom.deleting") : t("bom.confirmDelete")}
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(false)}>
-                Cancel
-              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(false)}>{t("bom.cancel")}</Button>
             </div>
           ) : (
             <Button variant="ghost" size="sm" className="text-error" onClick={() => setConfirmDelete(true)}>
               <Trash2 className="h-4 w-4" />
-              Delete
+              {t("bom.deleteBoM")}
             </Button>
           )}
           <Button variant="secondary" size="sm" onClick={onClose}>
-            Close
+            {t("common.close")}
           </Button>
         </div>
     </DrawerShell>

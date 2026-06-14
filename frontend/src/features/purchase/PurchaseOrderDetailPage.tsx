@@ -1,5 +1,6 @@
 import { Building2, ChevronRight, PackageCheck } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -20,6 +21,7 @@ import { getApiErrorMessage } from "@/utils/apiError";
 import { formatCurrency, formatDateTime, formatNumber } from "@/utils/format";
 
 export function PurchaseOrderDetailPage() {
+  const { t } = useTranslation();
   const id = Number(useParams().id);
   const { data: order, isLoading, error, refetch } = usePurchaseOrder(id);
   const { data: products } = useProducts();
@@ -60,23 +62,25 @@ export function PurchaseOrderDetailPage() {
     <div className="mx-auto max-w-[1100px] space-y-6 p-6 lg:p-8">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <nav className="flex items-center gap-2 text-body-sm text-on-surface-variant">
-          <Link to="/purchase-orders" className="hover:text-primary">Purchasing</Link>
+          <Link to="/purchase-orders" className="hover:text-primary">{t("purchase.purchasing")}</Link>
           <ChevronRight className="h-4 w-4" />
           <span className="font-semibold text-on-surface">{formatPoRef(order.id)}</span>
         </nav>
         <div className="flex items-center gap-2">
           {canCancel && (
-            <Button variant="ghost" size="sm" className="text-error" onClick={() => setShowCancel(true)}>Cancel</Button>
+            <Button variant="ghost" size="sm" className="text-error" onClick={() => setShowCancel(true)}>
+              {t("purchase.cancelOrder")}
+            </Button>
           )}
           {canConfirm && (
             <Button size="sm" disabled={confirmMut.isPending} onClick={() => run(() => confirmMut.mutateAsync(), `${formatPoRef(order.id)} confirmed`)}>
-              {confirmMut.isPending ? "Confirming…" : "Confirm"}
+              {confirmMut.isPending ? t("purchase.confirming") : t("purchase.confirmBtn")}
             </Button>
           )}
           {canReceive && (
             <Button size="sm" onClick={() => setShowReceive(true)}>
               <PackageCheck className="h-4 w-4" />
-              Receive
+              {t("purchase.receiveBtn")}
             </Button>
           )}
         </div>
@@ -92,23 +96,23 @@ export function PurchaseOrderDetailPage() {
           {order.vendor}
         </p>
         <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <Info label="Creation Date" value={formatDateTime(order.creation_date)} />
-          <Info label="Responsible" value={order.responsible_person ?? "—"} />
-          <Info label="Source" value={order.source_sales_order_id != null ? `SO-${order.source_sales_order_id}` : "Manual"} />
-          <Info label="Total" value={formatCurrency(order.total_amount)} />
+          <Info label={t("purchase.creationDate")} value={formatDateTime(order.creation_date)} />
+          <Info label={t("purchase.responsible")} value={order.responsible_person ?? "—"} />
+          <Info label={t("purchase.source")} value={order.source_sales_order_id != null ? `SO-${order.source_sales_order_id}` : t("purchase.manual")} />
+          <Info label={t("common.total")} value={formatCurrency(order.total_amount)} />
         </div>
       </div>
 
-      <SectionCard title="Order Lines" icon={PackageCheck} bodyClassName="overflow-x-auto">
+      <SectionCard title={t("purchase.orderLines")} icon={PackageCheck} bodyClassName="overflow-x-auto">
         <table className="w-full border-collapse text-left">
           <thead>
             <tr className="border-b border-outline-variant bg-surface-container-low text-label-upper uppercase text-on-surface-variant">
-              <th className="px-4 py-3">Product</th>
-              <th className="px-4 py-3 text-right">Ordered</th>
-              <th className="px-4 py-3 text-right">Received</th>
-              <th className="px-4 py-3 text-right">Remaining</th>
-              <th className="px-4 py-3 text-right">Cost</th>
-              <th className="px-4 py-3 text-right">Subtotal</th>
+              <th className="px-4 py-3">{t("common.product")}</th>
+              <th className="px-4 py-3 text-right">{t("purchase.ordered")}</th>
+              <th className="px-4 py-3 text-right">{t("purchase.received")}</th>
+              <th className="px-4 py-3 text-right">{t("purchase.remaining")}</th>
+              <th className="px-4 py-3 text-right">{t("purchase.cost")}</th>
+              <th className="px-4 py-3 text-right">{t("common.subtotal")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant text-table-data text-on-surface">
@@ -140,11 +144,11 @@ export function PurchaseOrderDetailPage() {
       <Modal
         open={showCancel}
         onClose={() => setShowCancel(false)}
-        title="Cancel Purchase Order"
+        title={t("purchase.cancelPurchaseOrderTitle")}
         description={`This will cancel ${formatPoRef(order.id)}.`}
         footer={
           <>
-            <Button variant="secondary" size="sm" onClick={() => setShowCancel(false)}>Keep Order</Button>
+            <Button variant="secondary" size="sm" onClick={() => setShowCancel(false)}>{t("purchase.keepOrder")}</Button>
             <Button
               variant="destructive"
               size="sm"
@@ -154,12 +158,12 @@ export function PurchaseOrderDetailPage() {
                 setShowCancel(false);
               }}
             >
-              {cancelMut.isPending ? "Cancelling…" : "Cancel Order"}
+              {cancelMut.isPending ? t("purchase.cancelling") : t("purchase.cancelOrder")}
             </Button>
           </>
         }
       >
-        <p className="text-body-sm text-on-surface-variant">Already-received goods remain in stock.</p>
+        <p className="text-body-sm text-on-surface-variant">{t("purchase.cancelNote")}</p>
       </Modal>
     </div>
   );

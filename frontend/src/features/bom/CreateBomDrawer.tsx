@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -16,7 +17,7 @@ import { getApiErrorMessage } from "@/utils/apiError";
 
 const scalarSchema = z.object({
   finished_product_id: z.coerce.number().int().positive("Select a finished product"),
-  quantity: z.coerce.number().positive("Quantity must be greater than zero"),
+  quantity: z.coerce.number().int().positive("Quantity must be greater than zero"),
 });
 type ScalarValues = z.infer<typeof scalarSchema>;
 
@@ -43,6 +44,7 @@ const newOperation = (): OperationDraft => ({
 });
 
 export function CreateBomDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useTranslation();
   const { data: products, isLoading: loadingProducts } = useProducts();
   const createMut = useCreateBom();
 
@@ -73,7 +75,7 @@ export function CreateBomDrawer({ open, onClose }: { open: boolean; onClose: () 
       (c) => c.component_product_id !== "" && Number(c.quantity_required) > 0,
     );
     if (validComponents.length === 0) {
-      setListError("Add at least one component with a quantity greater than zero.");
+      setListError(t("bom.addAtLeastOneComponent"));
       return;
     }
     const validOperations = operations.filter((o) => o.work_center.trim() !== "");
@@ -102,9 +104,9 @@ export function CreateBomDrawer({ open, onClose }: { open: boolean; onClose: () 
   });
 
   return (
-    <DrawerShell open={open} onClose={onClose} widthClassName="max-w-lg" label="New Bill of Materials">
+    <DrawerShell open={open} onClose={onClose} widthClassName="max-w-lg" label={t("bom.newBom")}>
         <div className="flex items-center justify-between border-b border-outline-variant p-4">
-          <h3 className="text-title-sm text-on-background">New Bill of Materials</h3>
+          <h3 className="text-title-sm text-on-background">{t("bom.newBom")}</h3>
           <button onClick={onClose} className="rounded-full p-1 text-on-surface-variant hover:bg-surface-container">
             <X className="h-5 w-5" />
           </button>
@@ -114,10 +116,10 @@ export function CreateBomDrawer({ open, onClose }: { open: boolean; onClose: () 
           {/* Section 1 — finished product */}
           <section className="space-y-4">
             <h4 className="border-b border-outline-variant pb-1 text-label-upper uppercase text-on-surface-variant">
-              Finished Product
+              {t("bom.finishedProductSection")}
             </h4>
             <div>
-              <Label htmlFor="finished_product_id">Product</Label>
+              <Label htmlFor="finished_product_id">{t("bom.product")}</Label>
               <select
                 id="finished_product_id"
                 {...register("finished_product_id")}
@@ -125,7 +127,7 @@ export function CreateBomDrawer({ open, onClose }: { open: boolean; onClose: () 
                 className="block w-full rounded-lg border border-outline-variant bg-surface px-3 py-2.5 text-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
               >
                 <option value="" disabled>
-                  {loadingProducts ? "Loading…" : "Select finished product…"}
+                  {loadingProducts ? t("common.loading") : t("bom.selectProduct")}
                 </option>
                 {(products ?? []).map((p) => (
                   <option key={p.id} value={p.id}>
@@ -138,8 +140,8 @@ export function CreateBomDrawer({ open, onClose }: { open: boolean; onClose: () 
               )}
             </div>
             <div>
-              <Label htmlFor="quantity">Quantity Produced (per batch)</Label>
-              <Input id="quantity" type="number" min="0" step="0.001" {...register("quantity")} />
+              <Label htmlFor="quantity">{t("bom.quantityPerBatch")}</Label>
+              <Input id="quantity" type="number" min="0" step="1" {...register("quantity")} />
               {errors.quantity && <p className="mt-1 text-body-sm text-error">{errors.quantity.message}</p>}
             </div>
           </section>
@@ -147,19 +149,19 @@ export function CreateBomDrawer({ open, onClose }: { open: boolean; onClose: () 
           {/* Section 2 — components */}
           <section className="space-y-3">
             <div className="flex items-center justify-between border-b border-outline-variant pb-1">
-              <h4 className="text-label-upper uppercase text-on-surface-variant">Components</h4>
+              <h4 className="text-label-upper uppercase text-on-surface-variant">{t("bom.componentsSection")}</h4>
               <button
                 type="button"
                 onClick={() => setComponents((c) => [...c, newComponent()])}
                 className="flex items-center gap-1 text-body-sm font-semibold text-primary hover:underline"
               >
-                <Plus className="h-4 w-4" /> Add Component
+                <Plus className="h-4 w-4" /> {t("bom.addComponent")}
               </button>
             </div>
             {components.map((c, i) => (
               <div key={c.key} className="flex items-end gap-2">
                 <div className="flex-1">
-                  <label className="mb-1 block text-[11px] text-on-surface-variant">Product</label>
+                  <label className="mb-1 block text-[11px] text-on-surface-variant">{t("bom.product")}</label>
                   <select
                     value={c.component_product_id}
                     onChange={(e) =>
@@ -174,7 +176,7 @@ export function CreateBomDrawer({ open, onClose }: { open: boolean; onClose: () 
                     className="block w-full rounded-lg border border-outline-variant bg-surface px-3 py-2 text-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
                   >
                     <option value="" disabled>
-                      Select…
+                      {t("bom.selectProduct")}
                     </option>
                     {(products ?? []).map((p) => (
                       <option key={p.id} value={p.id}>
@@ -184,11 +186,11 @@ export function CreateBomDrawer({ open, onClose }: { open: boolean; onClose: () 
                   </select>
                 </div>
                 <div className="w-24">
-                  <label className="mb-1 block text-[11px] text-on-surface-variant">Qty Req.</label>
+                  <label className="mb-1 block text-[11px] text-on-surface-variant">{t("bom.qtyRequired")}</label>
                   <Input
                     type="number"
                     min="0"
-                    step="0.001"
+                    step="1"
                     value={c.quantity_required}
                     onChange={(e) =>
                       setComponents((prev) =>
@@ -215,22 +217,22 @@ export function CreateBomDrawer({ open, onClose }: { open: boolean; onClose: () 
           {/* Section 3 — operations */}
           <section className="space-y-3">
             <div className="flex items-center justify-between border-b border-outline-variant pb-1">
-              <h4 className="text-label-upper uppercase text-on-surface-variant">Operations (optional)</h4>
+              <h4 className="text-label-upper uppercase text-on-surface-variant">{t("bom.operationsSection")}</h4>
               <button
                 type="button"
                 onClick={() => setOperations((o) => [...o, newOperation()])}
                 className="flex items-center gap-1 text-body-sm font-semibold text-primary hover:underline"
               >
-                <Plus className="h-4 w-4" /> Add Operation
+                <Plus className="h-4 w-4" /> {t("bom.addOperation")}
               </button>
             </div>
             {operations.length === 0 && (
-              <p className="text-body-sm text-on-surface-variant">No operations defined.</p>
+              <p className="text-body-sm text-on-surface-variant">{t("bom.noOperations")}</p>
             )}
             {operations.map((o, i) => (
               <div key={o.key} className="flex items-end gap-2">
                 <div className="flex-1">
-                  <label className="mb-1 block text-[11px] text-on-surface-variant">Work Center</label>
+                  <label className="mb-1 block text-[11px] text-on-surface-variant">{t("bom.workCenter")}</label>
                   <Input
                     value={o.work_center}
                     placeholder="e.g. Assembly"
@@ -243,7 +245,7 @@ export function CreateBomDrawer({ open, onClose }: { open: boolean; onClose: () 
                   />
                 </div>
                 <div className="w-28">
-                  <label className="mb-1 block text-[11px] text-on-surface-variant">Duration (min)</label>
+                  <label className="mb-1 block text-[11px] text-on-surface-variant">{t("bom.durationMin")}</label>
                   <Input
                     type="number"
                     min="0"
@@ -272,10 +274,10 @@ export function CreateBomDrawer({ open, onClose }: { open: boolean; onClose: () 
 
         <div className="flex items-center justify-end gap-2 border-t border-outline-variant bg-surface p-4">
           <Button variant="secondary" size="sm" onClick={onClose}>
-            Cancel
+            {t("bom.cancel")}
           </Button>
           <Button type="submit" form="bom-form" size="sm" disabled={createMut.isPending}>
-            {createMut.isPending ? "Creating…" : "Create BoM"}
+            {createMut.isPending ? t("bom.creating") : t("bom.createBom")}
           </Button>
         </div>
     </DrawerShell>

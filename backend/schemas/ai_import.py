@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
+
+from utils.quantity_validation import validate_whole_quantity
 
 
 class ImportedItem(BaseModel):
@@ -8,6 +10,11 @@ class ImportedItem(BaseModel):
     quantity: float
     matched_product_id: int | None = None
     matched_product_name: str | None = None
+
+    @field_validator("quantity")
+    @classmethod
+    def _whole_qty(cls, v: float) -> float:
+        return validate_whole_quantity(v)
 
 
 class ImportedOrder(BaseModel):

@@ -1,9 +1,11 @@
-import { LogOut, Search, Settings } from "lucide-react";
+import { LogOut, Search } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { NotificationDropdown } from "@/components/common/NotificationDropdown";
 import { useAuth } from "@/features/auth/AuthContext";
-import { cn } from "@/utils/cn";
+
+
 
 function initials(name: string): string {
   return name
@@ -17,6 +19,7 @@ function initials(name: string): string {
 
 export function Topbar() {
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -26,16 +29,13 @@ export function Topbar() {
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-outline" />
         <input
           type="search"
-          placeholder="Search orders, products, lots…"
+          placeholder={t("topbar.searchPlaceholder")}
           className="w-full rounded-lg border border-outline-variant bg-surface-container-low py-2 pl-10 pr-3 text-body-md text-on-surface placeholder:text-outline focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
         />
       </div>
 
       <div className="ml-auto flex items-center gap-1">
         <NotificationDropdown />
-        <IconButton label="Settings">
-          <Settings className="h-5 w-5" />
-        </IconButton>
 
         {/* User menu */}
         <div className="relative ml-2">
@@ -67,7 +67,7 @@ export function Topbar() {
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-body-md text-error transition-colors hover:bg-error-container/40"
               >
                 <LogOut className="h-4 w-4" />
-                Sign out
+                {t("auth.logout")}
               </button>
             </div>
           )}
@@ -77,25 +77,4 @@ export function Topbar() {
   );
 }
 
-function IconButton({
-  children,
-  label,
-  className,
-}: {
-  children: React.ReactNode;
-  label: string;
-  className?: string;
-}) {
-  return (
-    <button
-      aria-label={label}
-      title={label}
-      className={cn(
-        "flex h-10 w-10 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface",
-        className,
-      )}
-    >
-      {children}
-    </button>
-  );
-}
+

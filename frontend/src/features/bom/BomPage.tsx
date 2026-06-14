@@ -1,5 +1,6 @@
 import { Network, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/components/common/PageHeader";
 import { Pagination } from "@/components/common/Pagination";
@@ -14,6 +15,7 @@ import type { BoM } from "@/types/bom";
 import { formatNumber } from "@/utils/format";
 
 export function BomPage() {
+  const { t } = useTranslation();
   const { data, isLoading, error, refetch } = useBoms();
   const { data: products } = useProducts();
 
@@ -28,15 +30,15 @@ export function BomPage() {
   }, [products]);
 
   const columns: Column<BoM>[] = [
-    { id: "id", header: "ID", width: "70px", cell: (b) => <span className="font-medium text-on-surface-variant">#{b.id}</span> },
+    { id: "id", header: t("bom.id"), width: "70px", cell: (b) => <span className="font-medium text-on-surface-variant">#{b.id}</span> },
     {
       id: "finished",
-      header: "Finished Product",
+      header: t("bom.finishedProduct"),
       cell: (b) => <span className="font-medium text-on-surface">{productName(b.finished_product_id)}</span>,
     },
-    { id: "quantity", header: "Quantity", align: "right", cell: (b) => formatNumber(b.quantity) },
-    { id: "components", header: "Components", align: "right", cell: (b) => b.components.length },
-    { id: "operations", header: "Operations", align: "right", cell: (b) => b.operations.length },
+    { id: "quantity", header: t("bom.quantity"), align: "right", cell: (b) => formatNumber(b.quantity) },
+    { id: "components", header: t("bom.components"), align: "right", cell: (b) => b.components.length },
+    { id: "operations", header: t("bom.operations"), align: "right", cell: (b) => b.operations.length },
     {
       id: "actions",
       header: "",
@@ -50,7 +52,7 @@ export function BomPage() {
           }}
           className="text-body-sm font-semibold text-primary opacity-0 transition-opacity hover:underline group-hover:opacity-100"
         >
-          View
+          {t("common.view")}
         </button>
       ),
     },
@@ -59,12 +61,12 @@ export function BomPage() {
   return (
     <div className="space-y-6 p-6 lg:p-8">
       <PageHeader
-        title="Bills of Materials"
-        subtitle="Define how finished products are built from components and operations."
+        title={t("bom.title")}
+        subtitle={t("bom.subtitle")}
         actions={
           <Button onClick={() => setCreateOpen(true)}>
             <Plus className="h-4 w-4" />
-            Create BoM
+            {t("bom.createBom")}
           </Button>
         }
       />
@@ -78,7 +80,7 @@ export function BomPage() {
           error={error}
           onRetry={() => refetch()}
           onRowClick={(b) => setSelected(b)}
-          emptyMessage="No bills of materials yet. Create one to enable manufacturing."
+          emptyMessage={t("bom.noBomsFound")}
         />
 
         <Pagination
@@ -90,7 +92,7 @@ export function BomPage() {
           onPrevious={pg.previousPage}
           onNext={pg.nextPage}
           onGoTo={pg.goToPage}
-          noun="bills of materials"
+          noun={t("bom.noun")}
         />
       </div>
 
@@ -104,8 +106,7 @@ export function BomPage() {
 
       <p className="flex items-center gap-1.5 text-[11px] text-on-surface-variant">
         <Network className="h-3.5 w-3.5" />
-        A product with a BoM can be produced via a Manufacturing Order or auto-manufactured on a
-        sales shortage.
+        {t("bom.bomNote")}
       </p>
     </div>
   );

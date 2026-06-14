@@ -1,4 +1,5 @@
 import { Boxes, Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Navigate } from "react-router-dom";
 
 import { FullPageSpinner } from "@/components/common/Spinner";
@@ -7,6 +8,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 
 export function LoginPage() {
   const { status } = useAuth();
+  const { t } = useTranslation();
 
   if (status === "loading") return <FullPageSpinner />;
   if (status === "authenticated") return <Navigate to="/dashboard" replace />;
@@ -62,17 +64,17 @@ export function LoginPage() {
       <div className="flex w-full items-center justify-center bg-surface p-6 sm:p-12 lg:w-1/2">
         <div className="w-full max-w-md">
           <div className="mb-10 text-center lg:text-left">
-            <h2 className="mb-2 text-display-lg text-on-surface">Welcome back</h2>
+            <h2 className="mb-2 text-display-lg text-on-surface">{t("auth.welcomeBack")}</h2>
             <p className="text-body-md text-on-surface-variant">
-              Please enter your details to access your dashboard.
+              {t("auth.enterDetails")}
             </p>
           </div>
           <LoginForm />
           <div className="mt-8 border-t border-outline-variant/30 pt-6 text-center">
             <p className="text-body-sm text-on-surface-variant">
-              Don't have an account?
+              {t("auth.noAccount")}
               <button className="ml-1 font-semibold text-primary hover:text-primary-container">
-                Contact Support
+                {t("auth.contactSupport")}
               </button>
             </p>
           </div>

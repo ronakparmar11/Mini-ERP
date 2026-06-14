@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Sparkles, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -27,6 +28,7 @@ const customerSchema = z.object({
 type CustomerValues = z.infer<typeof customerSchema>;
 
 export function CreateSalesOrderDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data: products, isLoading: loadingProducts } = useProducts();
   const createMut = useCreateSalesOrder();
@@ -53,8 +55,6 @@ export function CreateSalesOrderDrawer({ open, onClose }: { open: boolean; onClo
 
   if (!open) return null;
 
-  // Map AI-extracted data into the form for human review. Pre-fills price for
-  // matched products; unmatched items leave the dropdown blank for the user.
   const applyImported = (data: ImportedOrder) => {
     reset({
       customer_name: data.customer_name ?? "",
@@ -101,7 +101,7 @@ export function CreateSalesOrderDrawer({ open, onClose }: { open: boolean; onClo
   const onSubmit = handleSubmit(async (customer) => {
     const validLines = lines.filter((l) => l.product_id !== "" && Number(l.ordered_quantity) > 0);
     if (validLines.length === 0) {
-      setLineError("Add at least one line with a product and quantity greater than zero.");
+      setLineError(t("sales.addAtLeastOneLine"));
       return;
     }
     setLineError(null);
@@ -129,15 +129,15 @@ export function CreateSalesOrderDrawer({ open, onClose }: { open: boolean; onClo
   });
 
   return (
-    <DrawerShell open={open} onClose={onClose} label="New Sales Order">
+    <DrawerShell open={open} onClose={onClose} label={t("sales.newSalesOrder")}>
         <div className="flex items-center justify-between border-b border-outline-variant p-4">
-          <h3 className="text-title-sm text-on-background">New Sales Order</h3>
+          <h3 className="text-title-sm text-on-background">{t("sales.newSalesOrder")}</h3>
           <button onClick={onClose} className="rounded-full p-1 text-on-surface-variant hover:bg-surface-container">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* AI-assisted import — pre-fills the form below for review */}
+        {/* AI-assisted import */}
         <div className="border-b border-outline-variant bg-secondary-container/40 p-4">
           <input
             ref={fileInputRef}
@@ -150,10 +150,10 @@ export function CreateSalesOrderDrawer({ open, onClose }: { open: boolean; onClo
             <div className="min-w-0">
               <p className="flex items-center gap-1.5 text-body-md font-semibold text-on-surface">
                 <Sparkles className="h-4 w-4 text-primary" />
-                Import from PDF
+                {t("sales.importFromPdf")}
               </p>
               <p className="text-[11px] text-on-surface-variant">
-                AI extracts customer &amp; items — you review before creating.
+                {t("sales.aiExtractHint")}
               </p>
             </div>
             <Button
@@ -163,7 +163,7 @@ export function CreateSalesOrderDrawer({ open, onClose }: { open: boolean; onClo
               onClick={() => fileInputRef.current?.click()}
               disabled={importMut.isPending}
             >
-              {importMut.isPending ? "Extracting…" : "Upload PDF"}
+              {importMut.isPending ? t("sales.extracting") : t("sales.uploadPdf")}
             </Button>
           </div>
         </div>
@@ -171,35 +171,35 @@ export function CreateSalesOrderDrawer({ open, onClose }: { open: boolean; onClo
         <form id="so-form" onSubmit={onSubmit} className="flex-1 space-y-6 overflow-y-auto p-4">
           <div className="space-y-4">
             <h4 className="border-b border-outline-variant pb-1 text-label-upper uppercase text-on-surface-variant">
-              Customer
+              {t("sales.customerSection")}
             </h4>
             <div>
-              <Label htmlFor="customer_name">Customer Name</Label>
+              <Label htmlFor="customer_name">{t("sales.customerName")}</Label>
               <Input id="customer_name" {...register("customer_name")} />
               {errors.customer_name && (
                 <p className="mt-1 text-body-sm text-error">{errors.customer_name.message}</p>
               )}
             </div>
             <div>
-              <Label htmlFor="customer_email">Email (optional)</Label>
+              <Label htmlFor="customer_email">{t("sales.customerEmail")}</Label>
               <Input id="customer_email" type="email" {...register("customer_email")} />
               {errors.customer_email && (
                 <p className="mt-1 text-body-sm text-error">{errors.customer_email.message}</p>
               )}
             </div>
             <div>
-              <Label htmlFor="customer_address">Address (optional)</Label>
+              <Label htmlFor="customer_address">{t("sales.customerAddress")}</Label>
               <Input id="customer_address" {...register("customer_address")} />
             </div>
             <div>
-              <Label htmlFor="salesperson">Salesperson (optional)</Label>
+              <Label htmlFor="salesperson">{t("sales.salesperson")}</Label>
               <Input id="salesperson" {...register("salesperson")} />
             </div>
           </div>
 
           <div className="space-y-3">
             <h4 className="border-b border-outline-variant pb-1 text-label-upper uppercase text-on-surface-variant">
-              Order Lines
+              {t("sales.orderLines")}
             </h4>
             <SalesLineEditor
               lines={lines}
@@ -213,14 +213,14 @@ export function CreateSalesOrderDrawer({ open, onClose }: { open: boolean; onClo
 
         <div className="flex items-center justify-between gap-2 border-t border-outline-variant bg-surface p-4">
           <div className="text-body-sm text-on-surface-variant">
-            Est. total <span className="font-semibold text-on-surface">{formatCurrency(estimatedTotal)}</span>
+            {t("sales.estimatedTotal")} <span className="font-semibold text-on-surface">{formatCurrency(estimatedTotal)}</span>
           </div>
           <div className="flex gap-2">
             <Button variant="secondary" size="sm" onClick={onClose}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" form="so-form" size="sm" disabled={createMut.isPending}>
-              {createMut.isPending ? "Creating…" : "Create Order"}
+              {createMut.isPending ? t("sales.creating") : t("sales.createOrder")}
             </Button>
           </div>
         </div>

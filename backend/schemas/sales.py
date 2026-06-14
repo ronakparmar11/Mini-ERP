@@ -1,8 +1,9 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from utils.enums import SalesOrderStatus
+from utils.quantity_validation import validate_whole_quantity
 
 
 class SalesOrderLineCreate(BaseModel):
@@ -10,6 +11,11 @@ class SalesOrderLineCreate(BaseModel):
     ordered_quantity: float = Field(gt=0)
     # If omitted, the service falls back to the product's sales_price.
     sales_price: float | None = Field(default=None, ge=0)
+
+    @field_validator("ordered_quantity")
+    @classmethod
+    def _whole_qty(cls, v: float) -> float:
+        return validate_whole_quantity(v)
 
 
 class SalesOrderCreate(BaseModel):
@@ -23,6 +29,11 @@ class SalesOrderCreate(BaseModel):
 class DeliveryLine(BaseModel):
     line_id: int
     quantity: float = Field(gt=0)
+
+    @field_validator("quantity")
+    @classmethod
+    def _whole_qty(cls, v: float) -> float:
+        return validate_whole_quantity(v)
 
 
 class DeliveryRequest(BaseModel):

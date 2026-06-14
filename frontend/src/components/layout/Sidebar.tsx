@@ -1,10 +1,13 @@
 import { Boxes, LifeBuoy, Settings } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 
 import { NAV_SECTIONS } from "@/components/layout/navItems";
 import { cn } from "@/utils/cn";
 
 export function Sidebar() {
+  const { t } = useTranslation();
+
   return (
     <aside className="flex h-screen w-sidebar-width flex-col border-r border-outline-variant/60 bg-surface-container-lowest">
       {/* Brand */}
@@ -27,7 +30,7 @@ export function Sidebar() {
                 {section.label}
               </p>
             )}
-            {section.items.map(({ label, to, icon: Icon }) => (
+            {section.items.map(({ labelKey, to, icon: Icon }) => (
               <NavLink
                 key={to}
                 to={to}
@@ -41,7 +44,7 @@ export function Sidebar() {
                 }
               >
                 <Icon className="h-5 w-5 shrink-0" />
-                <span>{label}</span>
+                <span>{t(labelKey)}</span>
               </NavLink>
             ))}
           </div>
@@ -50,10 +53,20 @@ export function Sidebar() {
 
       {/* Footer */}
       <div className="space-y-1 border-t border-outline-variant/60 px-3 py-4">
-        <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-body-md text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface">
+        <NavLink
+          to="/settings"
+          className={({ isActive }) =>
+            cn(
+              "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-body-md transition-colors",
+              isActive
+                ? "bg-secondary-container font-semibold text-primary"
+                : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
+            )
+          }
+        >
           <Settings className="h-5 w-5" />
-          Settings
-        </button>
+          {t("sidebar.settings")}
+        </NavLink>
         <NavLink
           to="/support"
           className={({ isActive }) =>
@@ -66,7 +79,7 @@ export function Sidebar() {
           }
         >
           <LifeBuoy className="h-5 w-5" />
-          Support
+          {t("sidebar.support")}
         </NavLink>
       </div>
     </aside>

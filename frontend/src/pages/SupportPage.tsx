@@ -7,6 +7,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/components/common/PageHeader";
 import { SectionCard } from "@/components/common/SectionCard";
@@ -54,53 +55,40 @@ const VOICE_COMMANDS = [
 
 /** Static, no-backend Support Center. */
 export function SupportPage() {
+  const { t } = useTranslation();
   const card = "p-4";
+
   return (
     <div className="mx-auto max-w-[1200px] space-y-6 p-6 lg:p-8">
       <PageHeader
-        title="Support Center"
-        subtitle="Guides, AI features, voice commands, and answers to common questions."
+        title={t("support.title")}
+        subtitle={t("support.subtitle")}
       />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* A — Getting Started */}
-        <SectionCard title="Getting Started" icon={Rocket} bodyClassName={card}>
+        <SectionCard title={t("support.gettingStarted")} icon={Rocket} bodyClassName={card}>
           <ul className="space-y-3">
-            <Item title="Create Products">
-              Add items from the Products page, or bulk-import them from Excel.
-            </Item>
-            <Item title="Create Sales Orders">
-              Capture customer demand; confirming reserves available stock.
-            </Item>
-            <Item title="Generate Invoices">
-              Once an order is delivered, generate and email its invoice.
-            </Item>
-            <Item title="Track Inventory">
-              Every reservation, receipt, production, and delivery is logged in the ledger.
-            </Item>
+            <Item title={t("support.createProducts")}>{t("support.createProductsDesc")}</Item>
+            <Item title={t("support.createSalesOrders")}>{t("support.createSalesOrdersDesc")}</Item>
+            <Item title={t("support.generateInvoices")}>{t("support.generateInvoicesDesc")}</Item>
+            <Item title={t("support.trackInventory")}>{t("support.trackInventoryDesc")}</Item>
           </ul>
         </SectionCard>
 
         {/* B — AI Features */}
-        <SectionCard title="AI Features" icon={Sparkles} bodyClassName={card}>
+        <SectionCard title={t("support.aiFeatures")} icon={Sparkles} bodyClassName={card}>
           <ul className="space-y-3">
-            <Item title="AI-Assisted Sales Order Import">
-              Upload a customer PDF and the assistant pre-fills a draft order for your review.
-            </Item>
-            <Item title="Supported PDF formats">
-              Text-based PDFs (purchase orders, emails, quotes). Scanned images aren't read.
-            </Item>
-            <Item title="How product matching works">
-              Extracted item names are matched to your catalogue (exact → partial → keyword).
-              Unmatched items are left blank for you to pick.
-            </Item>
+            <Item title={t("support.aiImport")}>{t("support.aiImportDesc")}</Item>
+            <Item title={t("support.supportedPdf")}>{t("support.supportedPdfDesc")}</Item>
+            <Item title={t("support.productMatching")}>{t("support.productMatchingDesc")}</Item>
           </ul>
         </SectionCard>
 
         {/* C — Voice Commands */}
-        <SectionCard title="Voice Commands" icon={Mic} bodyClassName={card}>
+        <SectionCard title={t("support.voiceCommands")} icon={Mic} bodyClassName={card}>
           <p className="mb-3 text-body-sm text-on-surface-variant">
-            Click the floating microphone button and say a command:
+            {t("support.voiceCommandsDesc")}
           </p>
           <div className="flex flex-wrap gap-2">
             {VOICE_COMMANDS.map((c) => (
@@ -108,65 +96,65 @@ export function SupportPage() {
                 key={c}
                 className="rounded-full border border-outline-variant bg-surface-container-low px-3 py-1 text-body-sm font-medium text-on-surface"
               >
-                “{c}”
+                "{c}"
               </span>
             ))}
           </div>
           <p className="mt-3 text-[12px] text-on-surface-variant">
-            Natural phrasing works too (e.g. “go to inventory”). Voice is optional — simply
-            don't use it, or use an unsupported browser, and the app works normally.
+            {t("support.voiceNote")}
           </p>
         </SectionCard>
 
         {/* D — Excel Import */}
-        <SectionCard title="Excel Import" icon={FileSpreadsheet} bodyClassName={card}>
+        <SectionCard title={t("support.excelImport")} icon={FileSpreadsheet} bodyClassName={card}>
           <ol className="space-y-3">
-            <Step n={1} title="Download Template">
-              Get the sample .xlsx with the required columns and example rows.
-            </Step>
-            <Step n={2} title="Fill Product Information">
-              Name, Sales Price, Cost Price, Procurement Route, Procure On Demand, Vendor ID.
-            </Step>
-            <Step n={3} title="Upload Excel">
-              Upload your file and click Validate to preview the results.
-            </Step>
-            <Step n={4} title="Validation Rules">
-              Names are required; prices must be numeric ≥ 0; route is Purchase/Manufacture;
-              duplicates and invalid rows are skipped — only valid rows are imported.
-            </Step>
+            <Step n={1} title={t("support.downloadTemplate")}>{t("support.downloadTemplateDesc")}</Step>
+            <Step n={2} title={t("support.fillProductInfo")}>{t("support.fillProductInfoDesc")}</Step>
+            <Step n={3} title={t("support.uploadExcel")}>{t("support.uploadExcelDesc")}</Step>
+            <Step n={4} title={t("support.validationRules")}>{t("support.validationRulesDesc")}</Step>
           </ol>
         </SectionCard>
 
         {/* E — FAQ (spans full width on large screens) */}
-        <SectionCard title="Frequently Asked Questions" icon={HelpCircle} bodyClassName={card} className="lg:col-span-2">
+        <SectionCard
+          title={t("support.faq")}
+          icon={HelpCircle}
+          bodyClassName={card}
+          className="lg:col-span-2"
+        >
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Faq
-              q="What happens if stock is insufficient?"
-              a="Procurement (Purchase) or Manufacturing workflows are triggered automatically for the shortage."
-            />
-            <Faq q="Can invoices be downloaded?" a="Yes — every invoice can be downloaded as a PDF, and optionally emailed." />
-            <Faq q="Can voice navigation be disabled?" a="Yes — it's entirely optional; just don't use the microphone button." />
-            <Faq q="Are existing products overwritten on import?" a="No — products that already exist are flagged as duplicates and skipped." />
+            <Faq q={t("support.faqStockInsufficient")} a={t("support.faqStockInsufficientAns")} />
+            <Faq q={t("support.faqInvoiceDownload")} a={t("support.faqInvoiceDownloadAns")} />
+            <Faq q={t("support.faqVoiceDisable")} a={t("support.faqVoiceDisableAns")} />
+            <Faq q={t("support.faqImportOverwrite")} a={t("support.faqImportOverwriteAns")} />
           </div>
         </SectionCard>
 
         {/* F — Contact */}
-        <SectionCard title="Contact Information" icon={Mail} bodyClassName={card} className="lg:col-span-2">
+        <SectionCard
+          title={t("support.contactInfo")}
+          icon={Mail}
+          bodyClassName={card}
+          className="lg:col-span-2"
+        >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-secondary-container p-2 text-primary">
                 <Mail className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-[12px] uppercase text-on-surface-variant">Email</p>
-                <a href="mailto:support@minierp.demo" className="text-body-md font-semibold text-primary hover:underline">
+                <p className="text-[12px] uppercase text-on-surface-variant">{t("support.email")}</p>
+                <a
+                  href="mailto:support@minierp.demo"
+                  className="text-body-md font-semibold text-primary hover:underline"
+                >
                   support@minierp.demo
                 </a>
               </div>
             </div>
             <div>
-              <p className="text-[12px] uppercase text-on-surface-variant">Support Hours</p>
-              <p className="text-body-md font-semibold text-on-surface">Mon–Fri, 9 AM – 6 PM</p>
+              <p className="text-[12px] uppercase text-on-surface-variant">{t("support.supportHours")}</p>
+              <p className="text-body-md font-semibold text-on-surface">{t("support.supportHoursValue")}</p>
             </div>
           </div>
         </SectionCard>
