@@ -159,22 +159,6 @@ React + TypeScript Frontend
 
 ---
 
-## 📸 Screenshots
-
-> Add screenshots here after deployment.
-
-Suggested screenshots:
-
-* Dashboard
-* Gujarati Language Switching
-* OCR Sales Order Import
-* Invoice Generation
-* Notifications
-* Voice Navigation
-* Manufacturing Workflow
-
----
-
 ## ⚙️ Local Setup
 
 ### Clone Repository
